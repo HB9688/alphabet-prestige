@@ -211,12 +211,13 @@
     const src = game.sourceAmt(L);
     $('gain').textContent = '+' + fmt(gain) + ' ' + L;
     $('bar').style.width = (Math.min(1, game.progress(L)) * 100).toFixed(1) + '%';
-    $('req').textContent = src < cfg.req
+    // Ist die nächsthöhere Stufe frei, zeigt die Zeile nur noch deren Bedarf (die eigene Zeile entfällt)
+    const H = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) + 1];
+    const showNext = H && game.isUnlocked(H);
+    $('req').textContent = showNext ? '' : src < cfg.req
       ? t('needs', { req: fmt(cfg.req), src: sourceName(L), have: fmtAmt(src) })
       : t('nextAt', { n: fmt(game.nextTarget(L)), L, next: fmt(game.nextAt(L)), src: sourceName(L), have: fmtAmt(src) });
-    // Nächsthöhere Stufe (falls freigeschaltet): wie viel von dieser Stufe für ihren nächsten Punkt nötig ist
-    const H = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) + 1];
-    $('reqNext').textContent = H && game.isUnlocked(H)
+    $('reqNext').textContent = showNext
       ? t('nextAt', { n: fmt(game.nextTarget(H)), L: H, next: fmt(game.nextAt(H)), src: sourceName(H), have: fmtAmt(game.sourceAmt(H)) })
       : '';
     const btn = $('resetBtn');
