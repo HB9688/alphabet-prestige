@@ -213,7 +213,7 @@
     $('bar').style.width = (Math.min(1, game.progress(L)) * 100).toFixed(1) + '%';
     $('req').textContent = src < cfg.req
       ? t('needs', { req: fmt(cfg.req), src: sourceName(L), have: fmtAmt(src) })
-      : t('nextAt', { n: fmt(gain + 1), L, next: fmt(game.nextAt(L)), src: sourceName(L), have: fmtAmt(src) });
+      : t('nextAt', { n: fmt(game.nextTarget(L)), L, next: fmt(game.nextAt(L)), src: sourceName(L), have: fmtAmt(src) });
     const btn = $('resetBtn');
     btn.textContent = t('prestige', { L }) + (gain >= 1 ? ' (+' + fmt(gain) + ')' : '');
     btn.disabled = !game.canReset(L);

@@ -122,20 +122,31 @@
         return Math.pow(src / cfg.req, cfg.exp) * game.product('gain:' + L);
       },
       gain(L) { return Math.floor(game.rawGain(L)); },
-      // Benötigte Menge der Quelle, damit der Reset-Gewinn um 1 steigt (Umkehrung von rawGain)
-      nextAt(L) {
+      // Anzeige-Ziele für den Reset-Gewinn: unter 10 jeder ganze Punkt, danach feste Stufen 10, 20, 50, 100, 200, 500 …
+      // Liefert [letzte erreichte Stufe, nächste Stufe]; die nächste bleibt stehen, bis sie erreicht ist.
+      gainSteps(L) {
+        const g = game.gain(L);
+        if (g < 10) return [g, g + 1];
+        const p = Math.pow(10, Math.floor(Math.log10(g)));
+        const steps = [1, 2, 5, 10].map(m => m * p);
+        const i = steps.findIndex(v => v > g);
+        return [steps[i - 1], steps[i]];
+      },
+      nextTarget(L) { return game.gainSteps(L)[1]; },
+      // Benötigte Menge der Quelle für einen Reset-Gewinn von target (Umkehrung von rawGain)
+      nextAt(L, target) {
         const cfg = LAYERS[L];
-        const mult = game.product('gain:' + L);
-        return cfg.req * Math.pow((game.gain(L) + 1) / mult, 1 / cfg.exp);
+        if (target === undefined) target = game.nextTarget(L);
+        return cfg.req * Math.pow(target / game.product('gain:' + L), 1 / cfg.exp);
       },
 
-      // Fortschritt 0..1 bis zur Mindestmenge bzw. bis zum nächsten ganzen Punkt
+      // Fortschritt 0..1 bis zur Mindestmenge bzw. von der letzten bis zur nächsten Gewinn-Stufe
       progress(L) {
         const cfg = LAYERS[L];
         const src = game.sourceAmt(L);
         if (src < cfg.req) return src / cfg.req;
-        const raw = game.rawGain(L);
-        return raw - Math.floor(raw);
+        const [from, to] = game.gainSteps(L);
+        return (game.rawGain(L) - from) / (to - from);
       },
 
       nextId(L) {
