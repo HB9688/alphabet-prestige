@@ -247,9 +247,26 @@ h1 {
 
 /* ---------- Mobil ---------- */
 @media (max-width: 760px) {
-  :root { --rows: 3; }
   body { overflow: auto; height: auto; }
   #stage { grid-template-columns: 1fr; }
   .lang { position: static; justify-content: flex-end; border: none; margin-bottom: 6px; }
   .lang button { border: 1px solid var(--line); border-radius: 6px; margin-left: 4px; }
+
+  /* Upgrade-Zeilen zweistöckig: oben ID, Name, Button – darunter Text über volle Breite */
+  :root { --rows: 3; --row-h: 118px; }
+  .up {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    grid-template-areas: "id name btn" "desc desc desc" "eff eff eff";
+    grid-template-rows: auto 1fr auto;
+    align-items: start;
+    gap: 2px 10px;
+    padding: 8px 10px;
+  }
+  .up > div:nth-child(2) { display: contents; }
+  .up .id { grid-area: id; font-size: 16px; line-height: 28px; }
+  .up .name { grid-area: name; line-height: 1.25; padding-top: 4px; hyphens: auto; overflow-wrap: break-word; }
+  .up .btn { grid-area: btn; min-width: 72px; padding: 4px 8px; }
+  .up .desc, .up .eff { white-space: normal; overflow: hidden; text-overflow: clip; }
+  .up .desc { grid-area: desc; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+  .up .eff { grid-area: eff; }
 }
