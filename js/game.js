@@ -107,6 +107,12 @@
         return Math.pow(src / cfg.req, cfg.exp) * game.product('gain:' + L);
       },
       gain(L) { return Math.floor(game.rawGain(L)); },
+      // Benötigte Menge der Quelle, damit der Reset-Gewinn um 1 steigt (Umkehrung von rawGain)
+      nextAt(L) {
+        const cfg = LAYERS[L];
+        const mult = game.product('gain:' + L);
+        return cfg.req * Math.pow((game.gain(L) + 1) / mult, 1 / cfg.exp);
+      },
 
       // Fortschritt 0..1 bis zur Mindestmenge bzw. bis zum nächsten ganzen Punkt
       progress(L) {
