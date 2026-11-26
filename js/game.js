@@ -137,7 +137,8 @@
       nextAt(L, target) {
         const cfg = LAYERS[L];
         if (target === undefined) target = game.nextTarget(L);
-        return cfg.req * Math.pow(target / game.product('gain:' + L), 1 / cfg.exp);
+        // unter req gibt es nie Gewinn, auch wenn Multiplikatoren rechnerisch weniger bräuchten
+        return Math.max(cfg.req, cfg.req * Math.pow(target / game.product('gain:' + L), 1 / cfg.exp));
       },
 
       // Fortschritt 0..1 bis zur Mindestmenge bzw. von der letzten bis zur nächsten Gewinn-Stufe

@@ -214,6 +214,11 @@
     $('req').textContent = src < cfg.req
       ? t('needs', { req: fmt(cfg.req), src: sourceName(L), have: fmtAmt(src) })
       : t('nextAt', { n: fmt(game.nextTarget(L)), L, next: fmt(game.nextAt(L)), src: sourceName(L), have: fmtAmt(src) });
+    // Nächsthöhere Stufe (falls freigeschaltet): wie viel von dieser Stufe für ihren nächsten Punkt nötig ist
+    const H = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) + 1];
+    $('reqNext').textContent = H && game.isUnlocked(H)
+      ? t('nextAt', { n: fmt(game.nextTarget(H)), L: H, next: fmt(game.nextAt(H)), src: sourceName(H), have: fmtAmt(game.sourceAmt(H)) })
+      : '';
     const btn = $('resetBtn');
     btn.textContent = t('prestige', { L }) + (gain >= 1 ? ' (+' + fmt(gain) + ')' : '');
     btn.disabled = !game.canReset(L);
