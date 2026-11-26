@@ -189,7 +189,7 @@ h1 {
 }
 
 /* ---------- Upgrade-Feld: 8 Einträge sichtbar, Rest per Scrollen ---------- */
-:root { --row-h: 62px; --row-gap: 6px; }
+:root { --row-h: 62px; --row-gap: 6px; --rows: 8; }
 
 .upcard {
   display: flex;
@@ -203,7 +203,7 @@ h1 {
 #upgrades {
   position: relative;
   flex: 0 1 auto;
-  height: calc(8 * var(--row-h) + 7 * var(--row-gap));
+  height: calc(var(--rows) * var(--row-h) + (var(--rows) - 1) * var(--row-gap));
   min-height: 0;
   overflow-y: auto;
   padding-right: 6px;
@@ -247,6 +247,7 @@ h1 {
 
 /* ---------- Mobil ---------- */
 @media (max-width: 760px) {
+  :root { --rows: 3; }
   body { overflow: auto; height: auto; }
   #stage { grid-template-columns: 1fr; }
   .lang { position: static; justify-content: flex-end; border: none; margin-bottom: 6px; }
