@@ -209,6 +209,7 @@
           const kept = {};
           AP.UPGRADE_ORDER[M].slice(0, keep).forEach(id => { if (lm.up[id]) kept[id] = true; });
           lm.up = kept;
+          game.invalidate(); // sonst zählen für die nächste Stufe noch die eben entfernten keep:-Upgrades
         }
         game.invalidate();
         return true;
