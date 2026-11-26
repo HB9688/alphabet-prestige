@@ -12,6 +12,9 @@
 
 * { box-sizing: border-box; }
 
+/* hidden-Attribut gewinnt immer, auch gegen display-Regeln einzelner Klassen */
+[hidden] { display: none !important; }
+
 html, body { height: 100%; margin: 0; }
 
 body {
