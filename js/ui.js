@@ -3,7 +3,9 @@
   const $ = id => document.getElementById(id);
   const t = AP.t;
   const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-  const VISIBLE = 8, SHOW_BOUGHT = 5;
+  // Desktop: 8 sichtbar (5 gekauft + 3 offen). Mobil (< 760 px): 3 sichtbar (1 gekauft + 2 offen).
+  const MOBILE = window.matchMedia('(max-width: 760px)');
+  const listView = () => MOBILE.matches ? { visible: 3, bought: 1 } : { visible: 8, bought: 5 };
 
   let game = AP.createGame(AP.loadSaved());
   let skipSave = false;
@@ -120,14 +122,15 @@
     });
   }
 
-  // Zeigt die letzten 5 gekauften und die nächsten 3 offenen Upgrades (8 sichtbar).
+  // Zeigt die letzten gekauften und die nächsten offenen Upgrades (siehe listView).
   function positionUpgrades(L, nextIdx) {
-    const key = L + nextIdx;
+    const view = listView();
+    const key = L + nextIdx + (MOBILE.matches ? 'm' : 'd');
     if (key === scrollKey) return;
     const first = !scrollKey;
     scrollKey = key;
     const box = $('upgrades');
-    const start = Math.max(0, Math.min(nextIdx - SHOW_BOUGHT, rows.length - VISIBLE));
+    const start = Math.max(0, Math.min(nextIdx - view.bought, rows.length - view.visible));
     const row = rows[start].el;
     const top = row.offsetTop;
     if (first) { box.style.scrollBehavior = 'auto'; box.scrollTop = top; box.style.scrollBehavior = ''; }
