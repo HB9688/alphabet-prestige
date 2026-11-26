@@ -22,7 +22,17 @@
       teaseD: false,
       tab: 'A',
       lang: 'de',
-      auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 }
+      auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 },
+      // Statistik. since = Spielzeit, ab der gezählt wird (bei alten Spielständen > 0)
+      stats: {
+        since: null,
+        pointsTotal: 0,
+        pointsMax: 0,
+        buys: 0,
+        bestGain: { A: 0, B: 0, C: 0 },
+        fastest: { A: null, B: null, C: null },
+        firstReset: { A: null, B: null, C: null }
+      }
     };
   }
 
@@ -39,6 +49,11 @@
 
   function createGame(saved) {
     const s = merge(defaultState(), saved);
+    if (s.stats.since === null) {
+      // Alter Spielstand: Statistik startet jetzt; erster Reset früherer Stufen ist unbekannt (-1)
+      s.stats.since = s.time;
+      LAYER_KEYS.forEach(L => { if (s.layers[L].resets > 0) s.stats.firstReset[L] = -1; });
+    }
     const UP = AP.UPGRADES;
 
     const game = {
@@ -139,6 +154,7 @@
         const u = UP[id];
         s.layers[u.layer].amt -= u.cost;
         s.layers[u.layer].up[id] = true;
+        s.stats.buys++;
         game.invalidate();
         if (u.kind.startsWith('unlock:')) {
           const next = u.kind.slice(7);
@@ -161,6 +177,10 @@
         const g = game.gain(L);
         if (!game.canReset(L)) return false;
         const lay = s.layers[L];
+        const st = s.stats, dur = s.time - lay.lastReset;
+        st.bestGain[L] = Math.max(st.bestGain[L], g);
+        if (st.fastest[L] === null || dur < st.fastest[L]) st.fastest[L] = dur;
+        if (st.firstReset[L] === null) st.firstReset[L] = s.time;
         lay.amt += g;
         lay.total += g;
         lay.resets++;
@@ -184,7 +204,10 @@
 
       tick(dt) {
         s.time += dt;
-        s.points += game.pointRate() * dt;
+        const produced = game.pointRate() * dt;
+        s.points += produced;
+        s.stats.pointsTotal += produced;
+        if (s.points > s.stats.pointsMax) s.stats.pointsMax = s.points;
         for (const L of ['A', 'B']) {
           if (!game.isUnlocked(L)) continue;
           const frac = game.maxOf('passive:' + L);

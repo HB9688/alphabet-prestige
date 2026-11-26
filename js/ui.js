@@ -53,6 +53,10 @@
     $('langSwitch').setAttribute('aria-label', t('language'));
     $('gearBtn').setAttribute('aria-label', t('settings'));
     $('gearBtn').title = t('settings');
+    $('statsBtn').setAttribute('aria-label', t('stats'));
+    $('statsBtn').title = t('stats');
+    $('statsClose').setAttribute('aria-label', t('close'));
+    statsKey = '';
     tabsKey = '';
     rows.forEach(r => { r.last = ''; });
   }
@@ -264,14 +268,67 @@
     if (!$('settingsMenu').hidden) menuTimer = setTimeout(() => toggleMenu(false), MENU_TIMEOUT);
   }
   function toggleMenu(open) {
+    if (open) toggleStats(false);
     $('settingsMenu').hidden = !open;
     armMenuTimer();
     $('gearBtn').setAttribute('aria-expanded', open);
   }
   $('gearBtn').addEventListener('click', e => { e.stopPropagation(); toggleMenu($('settingsMenu').hidden); });
   ['click', 'pointerdown', 'keydown'].forEach(ev => $('settingsMenu').addEventListener(ev, armMenuTimer));
-  document.addEventListener('click', e => { if (!$('settings').contains(e.target) && !$('settingsMenu').contains(e.target)) toggleMenu(false); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleMenu(false); });
+  document.addEventListener('click', e => {
+    if ($('settings').contains(e.target)) return;
+    if (!$('settingsMenu').contains(e.target)) toggleMenu(false);
+    if (!$('statsPanel').contains(e.target)) toggleStats(false);
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleMenu(false); toggleStats(false); } });
+
+  // ---------- Statistik ----------
+  let statsKey = '';
+  function toggleStats(open) {
+    if (open) toggleMenu(false);
+    $('statsPanel').hidden = !open;
+    $('statsBtn').setAttribute('aria-expanded', open);
+    if (open) renderStats();
+  }
+  $('statsBtn').addEventListener('click', e => { e.stopPropagation(); toggleStats($('statsPanel').hidden); });
+  $('statsClose').addEventListener('click', () => toggleStats(false));
+
+  function fmtTime(sec) {
+    if (sec === null || sec < 0 || !isFinite(sec)) return '–';
+    sec = Math.floor(sec);
+    const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), x = sec % 60;
+    if (d) return d + ' d ' + h + ' h';
+    if (h) return h + ' h ' + m + ' min';
+    if (m) return m + ' min ' + x + ' s';
+    return x + ' s';
+  }
+  function renderStats() {
+    if ($('statsPanel').hidden) return;
+    const s = game.state, st = s.stats;
+    const rows = list => '<dl>' + list.map(([k, v]) => '<dt>' + k + '</dt><dd>' + v + '</dd>').join('') + '</dl>';
+    let html = '<h3>' + t('stGeneral') + '</h3>' + rows([
+      [t('stPlayTime'), fmtTime(s.time)],
+      [t('stPointsTotal'), fmt(st.pointsTotal)],
+      [t('stPointsMax'), fmt(st.pointsMax)],
+      [t('stRate'), fmt(game.pointRate(), 1)],
+      [t('stBuys'), fmt(st.buys)],
+      [t('stUnlocked'), s.unlocked.join(' · ')]
+    ]);
+    game.LAYER_KEYS.filter(L => game.isUnlocked(L)).forEach(L => {
+      const lay = s.layers[L];
+      html += '<h3>' + t('stLayer', { L }) + '</h3>' + rows([
+        [t('stResets'), fmt(lay.resets)],
+        [t('stTotal', { L }), fmtAmt(lay.total)],
+        [t('stBest'), st.bestGain[L] ? '+' + fmt(st.bestGain[L]) + ' ' + L : '–'],
+        [t('stFastest'), fmtTime(st.fastest[L])],
+        [t('stFirst'), fmtTime(st.firstReset[L])],
+        [t('stSince'), lay.resets ? fmtTime(game.timeSince(L)) : '–'],
+        [t('stUpgrades'), game.count(L) + ' / 26']
+      ]);
+    });
+    if (st.since > 0) html += '<div class="note">' + t('stNote', { t: fmtTime(st.since) }) + '</div>';
+    if (html !== statsKey) { statsKey = html; $('statsBody').innerHTML = html; }
+  }
   MOBILE.addEventListener('change', placeSaveCard);
   placeSaveCard();
   $('saveBtn').addEventListener('click', () => showSaved(game.save()));
@@ -310,6 +367,7 @@
     while (dt > 0) { const step = Math.min(dt, 0.5); game.tick(step); dt -= step; }
     if (saveTimer >= 10) { saveTimer = 0; showSaved(game.save()); }
     render();
+    renderStats();
   }, 50);
 
   // ---------- Debug (Konsole) ----------
