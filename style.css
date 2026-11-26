@@ -313,7 +313,7 @@ h1 {
   #panel .reset-row { margin-top: 8px; }
 
   /* Upgrade-Zeilen zweistöckig: oben ID, Name, Button – darunter Text über volle Breite */
-  :root { --rows: 3; --row-h: 118px; }
+  :root { --rows: 2; --row-h: 118px; }
   .up {
     grid-template-columns: 32px minmax(0, 1fr) auto;
     grid-template-areas: "id name btn" "desc desc desc" "eff eff eff";

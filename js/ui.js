@@ -3,9 +3,9 @@
   const $ = id => document.getElementById(id);
   const t = AP.t;
   const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-  // Desktop: 8 sichtbar (5 gekauft + 3 offen). Mobil (< 760 px): 3 sichtbar (1 gekauft + 2 offen).
+  // Desktop: 8 sichtbar (5 gekauft + 3 offen). Mobil (< 760 px): 2 sichtbar (1 gekauft + 1 offen; alle gekauft: die letzten 2).
   const MOBILE = window.matchMedia('(max-width: 760px)');
-  const listView = () => MOBILE.matches ? { visible: 3, bought: 1 } : { visible: 8, bought: 5 };
+  const listView = () => MOBILE.matches ? { visible: 2, bought: 1 } : { visible: 8, bought: 5 };
 
   let game = AP.createGame(AP.loadSaved());
   let skipSave = false;
