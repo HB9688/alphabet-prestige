@@ -122,11 +122,11 @@
         return Math.pow(src / cfg.req, cfg.exp) * game.product('gain:' + L);
       },
       gain(L) { return Math.floor(game.rawGain(L)); },
-      // Anzeige-Ziele für den Reset-Gewinn: unter 10 jeder ganze Punkt, danach feste Stufen 10, 20, 50, 100, 200, 500 …
+      // Anzeige-Ziele für den Reset-Gewinn: unter 100 jeder ganze Punkt, danach feste Stufen 100, 200, 500, 1000 …
       // Liefert [letzte erreichte Stufe, nächste Stufe]; die nächste bleibt stehen, bis sie erreicht ist.
       gainSteps(L) {
         const g = game.gain(L);
-        if (g < 10) return [g, g + 1];
+        if (g < 100) return [g, g + 1];
         const p = Math.pow(10, Math.floor(Math.log10(g)));
         const steps = [1, 2, 5, 10].map(m => m * p);
         const i = steps.findIndex(v => v > g);
