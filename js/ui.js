@@ -219,7 +219,8 @@
     $('layerAmt').textContent = fmtAmt(game.amt(L));
 
     const frac = game.maxOf('passive:' + L);
-    $('passive').textContent = frac > 0 ? t('passive', { v: fmt(game.rawGain(L) * frac, 1) }) : '';
+    $('passive').textContent = frac > 0 ? t('passive', { v: fmt(game.rawGain(L) * frac, 1), L }) : '';
+    $('resetInfo').hidden = frac > 0;
 
     const gain = game.gain(L);
     const cfg = game.LAYERS[L];
@@ -246,7 +247,7 @@
     // Zweiter Knopf für die Stufe darunter: alle ihre Upgrades gekauft, aber noch kein Auto-Reset dafür
     const P = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) - 1];
     const prevBtn = $('resetPrevBtn');
-    prevBtn.hidden = !(P && game.count(P) === AP.UPGRADE_ORDER[P].length && !game.hasKind('autoreset:' + P));
+    prevBtn.hidden = !(P && game.count(P) === AP.UPGRADE_ORDER[P].length && !game.hasKind('passive:' + P));
     if (!prevBtn.hidden) {
       const pg = game.gain(P);
       prevBtn.textContent = pg >= 1 ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P });
@@ -256,15 +257,8 @@
     }
 
     const canAutoBuy = game.hasKind('autobuy:' + L);
-    const canAutoReset = game.hasKind('autoreset:' + L);
-    $('autoCard').hidden = !canAutoReset;
     $('autoBuyRow').hidden = !canAutoBuy;
-    $('autoResetRow').hidden = !canAutoReset;
     if (canAutoBuy) $('autoBuy').checked = !!s.auto['buy' + L];
-    if (canAutoReset) {
-      $('autoReset').checked = !!s.auto['reset' + L];
-      if (document.activeElement !== $('autoFactor')) $('autoFactor').value = s.auto['reset' + L + 'Factor'];
-    }
 
     updateUpgrades(L);
     renderTabs();
@@ -281,11 +275,6 @@
     if (P && game.reset(P)) render();
   });
   $('autoBuy').addEventListener('change', e => { game.state.auto['buy' + game.state.tab] = e.target.checked; });
-  $('autoReset').addEventListener('change', e => { game.state.auto['reset' + game.state.tab] = e.target.checked; });
-  $('autoFactor').addEventListener('change', e => {
-    const v = parseFloat(e.target.value);
-    if (isFinite(v) && v >= 0) game.state.auto['reset' + game.state.tab + 'Factor'] = v;
-  });
 
   function showSaved(ok) {
     const text = ok ? t('saved', { t: new Date().toLocaleTimeString(AP.lang === 'en' ? 'en-US' : 'de-DE') }) : t('saveFail');

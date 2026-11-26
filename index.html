@@ -52,23 +52,21 @@
         <div class="label" id="layerLabel">A-Punkte</div>
         <div class="big" id="layerAmt">0</div>
         <div class="sub" id="passive"></div>
-        <div class="label spaced" data-i18n="nextReset">Nächster Reset</div>
-        <div id="gain">+0 A</div>
-        <div class="bar"><div class="fill" id="bar"></div></div>
-        <div class="sub" id="req"></div>
+        <!-- entfällt, sobald die Stufe passiv erzeugt wird (dann steht oben „+x A /s“) -->
+        <div id="resetInfo">
+          <div class="label spaced" data-i18n="nextReset">Nächster Reset</div>
+          <div id="gain">+0 A</div>
+          <div class="bar"><div class="fill" id="bar"></div></div>
+          <div class="sub" id="req"></div>
+        </div>
         <div class="sub" id="reqNext"></div>
-        <!-- Reset-Knöpfe: aktuelle Stufe (2/3) und ggf. die Stufe darunter (1/3), solange sie keinen Auto-Reset hat -->
+        <!-- Reset-Knöpfe: aktuelle Stufe (2/3) und ggf. die Stufe darunter (1/3), solange sie nicht passiv erzeugt wird -->
         <div class="reset-row">
           <button id="resetBtn" class="btn wide">A-Prestige</button>
           <button id="resetPrevBtn" class="btn wide" hidden></button>
         </div>
       </section>
 
-      <section class="card" id="autoCard" hidden>
-        <div class="label" data-i18n="automation">Automatisierung</div>
-        <label class="toggle" id="autoResetRow"><input type="checkbox" id="autoReset"> <span data-i18n="autoReset"></span>
-          <input type="number" id="autoFactor" min="0" step="0.1" value="1"> <span data-i18n="timesStock"></span></label>
-      </section>
 
       <section class="card small" id="saveCard">
         <button class="btn" id="saveBtn" data-i18n="save">Speichern</button>

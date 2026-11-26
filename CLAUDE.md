@@ -21,12 +21,13 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - **Hintergrund** dunkelgrau bis schwarz. **Schriftfarbe** im Inhalt = Farbe der aktiven Stufe (`--stage`, gesetzt in `ui.js`).
 - **Überschrift** „Alphabet Prestige“ mit Verlauf über alle 26 Farben, genau auf Textbreite (`display:inline-block`), darunter eine weiche Palettenleiste.
 - **Tabs** wie Browser-Tabs, einer pro freigeschalteter Stufe, plus ein Schloss-Tab für die nächste. Tabs werden schmaler, je mehr Stufen frei sind; bei wenig Platz nur der Buchstabe.
-- **Layout:** links festes Panel (Punkte, Stufenpunkte, Reset, Auto-Reset, Speichern). Rechts ein hinterlegtes Feld mit der Upgrade-Liste: **immer 8 Einträge sichtbar – die letzten 5 gekauften und die nächsten 3 offenen**; **mobil (< 760 px) nur 2 – das zuletzt gekaufte und das nächste offene (alle gekauft: die letzten 2)**; alle 26 per Scrollen erreichbar. Nach einem Kauf scrollt die Liste automatisch nach.
+- **Layout:** links festes Panel (Punkte, Stufenpunkte, Reset, Speichern). Rechts ein hinterlegtes Feld mit der Upgrade-Liste: **immer 8 Einträge sichtbar – die letzten 5 gekauften und die nächsten 3 offenen**; **mobil (< 760 px) nur 2 – das zuletzt gekaufte und das nächste offene (alle gekauft: die letzten 2)**; alle 26 per Scrollen erreichbar. Nach einem Kauf scrollt die Liste automatisch nach.
 - **Mobil (< 760 px):** Speichern/Export/Import/Neu starten liegen nicht im Panel, sondern im Zahnrad-Menü oben links (Zeile mit DE | EN), rechts neben dem Zahnrad „Gespeichert …“. Das Menü schiebt den Inhalt nach unten und blendet sich 5 s nach dem Öffnen bzw. nach der letzten Aktion darin aus. Punkte-Felder kompakter. Am Desktop bleibt das Speicher-Feld im Panel.
 - **Statistik:** Diagramm-Icon oben links (mobil rechts neben dem Zahnrad, Desktop allein). Öffnet ein Feld mit Spielzeit, Punkten, Käufen und je Stufe Resets/Bestwerten (mobil schiebt es den Inhalt nach unten, am Desktop schwebt es). Zähler liegen in `state.stats` (`game.js`); neue Statistik-Werte dort ergänzen und in `renderStats()` (`ui.js`) anzeigen.
-- **Auto-Kauf:** Häkchen „Auto-Kauf“ im Kopf der Upgrade-Liste zwischen „X-Upgrades“ und „n / 26 gekauft“ (sobald freigeschaltet). Das Feld „Automatisierung“ im Panel enthält nur noch den Auto-Reset.
+- **Auto-Kauf:** Häkchen „Auto-Kauf“ im Kopf der Upgrade-Liste zwischen „X-Upgrades“ und „n / 26 gekauft“ (sobald freigeschaltet). Ein Feld „Automatisierung“ gibt es nicht mehr.
+- **Passive Erzeugung:** Sobald eine Stufe passiv erzeugt (`passive:X`), steht unter ihren Punkten „+x A /s“; „Nächster Reset“ mit Balken entfällt, der Prestige-Knopf bleibt.
 - **Reset-Anzeige:** Unter dem Balken steht der Bedarf für den nächsten Punkt (ab Gewinn 100 feste Zielstufen 100 → 200 → 500 …). Ist die nächsthöhere Stufe frei **und** das Freischalt-Upgrade (xZ) dieses Durchgangs gekauft oder bezahlbar, steht dort stattdessen der Bedarf für deren nächsten Punkt.
-- **Reset-Knöpfe:** Sind alle Upgrades der Stufe darunter gekauft und gibt es für sie noch keinen Auto-Reset, steht neben dem Prestige-Knopf (2/3 Breite) ein kleiner Reset-Knopf für diese Stufe (1/3), z. B. auf Tab B „+1,2e16 A“.
+- **Reset-Knöpfe:** Sind alle Upgrades der Stufe darunter gekauft und erzeugt sie noch nicht passiv, steht neben dem Prestige-Knopf (2/3 Breite) ein kleiner Reset-Knopf für diese Stufe (1/3), z. B. auf Tab B „+1,2e16 A“.
 - **Sprache:** Umschalter DE | EN oben rechts. **Jeder neue sichtbare Text braucht beide Sprachen** – UI-Texte in `AP.STRINGS` (`js/i18n.js`), englische Upgrade-Texte in `AP.UPGRADE_EN` (gleiche Reihenfolge wie in `upgrades.js`).
 
 ## Upgrades – Konventionen
@@ -42,7 +43,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 - AA ist kostenlos und erzeugt 1 Punkt/s. A-Reset ab 10 Punkten: Gewinn `floor((Quelle/req)^exp × Multiplikatoren)`.
 - Ein Reset der Stufe X setzt Punkte und alle niedrigeren Stufen (Punkte und Upgrades) zurück; `keep:`-Upgrades behalten die ersten N Upgrades.
-- Geplanter Verlauf der Automatisierung: zuerst Auto-Kauf (BG), dann Auto-Reset (CD, CL), dann passive Generierung ohne Reset (CF, CO). Spätere Stufen sollen das weiter ausbauen.
+- Verlauf der Automatisierung: zuerst Auto-Kauf (BG, CI), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B), dann 10 %/s (CF, CO), dann ×10 (CJ, CT). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
 
 ## Balance
 
@@ -53,7 +54,7 @@ Zielzeiten für einen aktiven Spieler (vom Nutzer vorgegeben: ~1 h bis zur erste
 | erster A-Reset | ~10 s | 0:10 |
 | AZ / erster B-Reset | ~55–60 min | 54 / 56 min |
 | BZ | ~4 h (vom Nutzer so akzeptiert) | 4:02 h |
-| CZ | ~6 h | 5:59 h |
+| CZ | ~6 h | 5:44 h |
 
 Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
 
