@@ -3,9 +3,9 @@
   const $ = id => document.getElementById(id);
   const t = AP.t;
   const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-  // Desktop: 8 sichtbar (5 gekauft + 3 offen). Mobil (< 760 px): 3 sichtbar (1 gekauft + 2 offen).
+  // Desktop: 8 sichtbar (5 gekauft + 3 offen). Mobil (< 760 px): 2 sichtbar (1 gekauft + 1 offen; alle gekauft: die letzten 2).
   const MOBILE = window.matchMedia('(max-width: 760px)');
-  const listView = () => MOBILE.matches ? { visible: 3, bought: 1 } : { visible: 8, bought: 5 };
+  const listView = () => MOBILE.matches ? { visible: 2, bought: 1 } : { visible: 8, bought: 5 };
 
   let game = AP.createGame(AP.loadSaved());
   let skipSave = false;
@@ -179,7 +179,7 @@
     const nextIdx = next ? AP.UPGRADES[next].index : 26;
     rows.forEach(r => {
       const owned = game.has(r.id);
-      const known = owned || r.u.index <= nextIdx + 2;
+      const known = owned || r.u.index <= Math.max(nextIdx + 2, game.state.revealed[L]);
       const can = game.canBuy(r.id);
       const cls = 'up' + (r.u.kind.startsWith('unlock:') ? ' unlock' : '') +
         (owned ? ' bought' : '') + (r.id === next ? ' next ' + (can ? 'can' : 'cant') : '') + (!known ? ' unknown' : '');
@@ -226,9 +226,11 @@
     const src = game.sourceAmt(L);
     $('gain').textContent = '+' + fmt(gain) + ' ' + L;
     $('bar').style.width = (Math.min(1, game.progress(L)) * 100).toFixed(1) + '%';
-    // Ist die nächsthöhere Stufe frei, zeigt die Zeile nur noch deren Bedarf (die eigene Zeile entfällt)
+    // Bedarf der nächsthöheren Stufe statt der eigenen Zeile – erst wenn diese Stufe frei ist und
+    // das Freischalt-Upgrade (xZ) dieses Durchgangs gekauft oder bezahlbar ist
     const H = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) + 1];
-    const showNext = H && game.isUnlocked(H);
+    const gate = AP.UPGRADES[AP.UPGRADE_ORDER[L][25]];
+    const showNext = H && game.isUnlocked(H) && (game.has(gate.id) || game.amt(L) >= gate.cost);
     $('req').textContent = showNext ? '' : src < cfg.req
       ? t('needs', { req: fmt(cfg.req), src: sourceName(L), have: fmtAmt(src) })
       : t('nextAt', { n: fmt(game.nextTarget(L)), L, next: fmt(game.nextAt(L)), src: sourceName(L), have: fmtAmt(src) });
