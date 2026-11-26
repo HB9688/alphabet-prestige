@@ -22,6 +22,8 @@
       teaseD: false,
       tab: 'A',
       lang: 'de',
+      // höchster Upgrade-Index je Stufe, der schon einmal aufgedeckt war (bleibt nach Resets sichtbar)
+      revealed: { A: 2, B: 2, C: 2 },
       auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 },
       // Statistik. since = Spielzeit, ab der gezählt wird (bei alten Spielständen > 0)
       stats: {
@@ -55,6 +57,12 @@
       LAYER_KEYS.forEach(L => { if (s.layers[L].resets > 0) s.stats.firstReset[L] = -1; });
     }
     const UP = AP.UPGRADES;
+    // Aufgedeckte Upgrades nachtragen (auch für alte Spielstände): ist die Stufe darüber frei, war xZ schon gekauft
+    LAYER_KEYS.forEach((L, i) => {
+      const above = LAYER_KEYS[i + 1];
+      const all = above ? s.unlocked.includes(above) : s.teaseD;
+      s.revealed[L] = Math.max(s.revealed[L], all ? 25 : Object.keys(s.layers[L].up).length + 2);
+    });
 
     const game = {
       state: s,
@@ -167,6 +175,7 @@
         s.layers[u.layer].amt -= u.cost;
         s.layers[u.layer].up[id] = true;
         s.stats.buys++;
+        s.revealed[u.layer] = Math.max(s.revealed[u.layer], u.index + 3);
         game.invalidate();
         if (u.kind.startsWith('unlock:')) {
           const next = u.kind.slice(7);

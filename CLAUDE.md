@@ -24,6 +24,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - **Layout:** links festes Panel (Punkte, Stufenpunkte, Reset, Automatisierung, Speichern). Rechts ein hinterlegtes Feld mit der Upgrade-Liste: **immer 8 Einträge sichtbar – die letzten 5 gekauften und die nächsten 3 offenen**; **mobil (< 760 px) nur 2 – das zuletzt gekaufte und das nächste offene (alle gekauft: die letzten 2)**; alle 26 per Scrollen erreichbar. Nach einem Kauf scrollt die Liste automatisch nach.
 - **Mobil (< 760 px):** Speichern/Export/Import/Neu starten liegen nicht im Panel, sondern im Zahnrad-Menü oben links (Zeile mit DE | EN), rechts neben dem Zahnrad „Gespeichert …“. Das Menü schiebt den Inhalt nach unten und blendet sich 5 s nach dem Öffnen bzw. nach der letzten Aktion darin aus. Punkte-Felder kompakter. Am Desktop bleibt das Speicher-Feld im Panel.
 - **Statistik:** Diagramm-Icon oben links (mobil rechts neben dem Zahnrad, Desktop allein). Öffnet ein Feld mit Spielzeit, Punkten, Käufen und je Stufe Resets/Bestwerten (mobil schiebt es den Inhalt nach unten, am Desktop schwebt es). Zähler liegen in `state.stats` (`game.js`); neue Statistik-Werte dort ergänzen und in `renderStats()` (`ui.js`) anzeigen.
+- **Reset-Anzeige:** Unter dem Balken steht der Bedarf für den nächsten Punkt (ab Gewinn 100 feste Zielstufen 100 → 200 → 500 …). Ist die nächsthöhere Stufe frei **und** das Freischalt-Upgrade (xZ) dieses Durchgangs gekauft oder bezahlbar, steht dort stattdessen der Bedarf für deren nächsten Punkt.
 - **Reset-Knöpfe:** Sind alle Upgrades der Stufe darunter gekauft und gibt es für sie noch keinen Auto-Reset, steht neben dem Prestige-Knopf (2/3 Breite) ein kleiner Reset-Knopf für diese Stufe (1/3), z. B. auf Tab B „+1,2e16 A“.
 - **Sprache:** Umschalter DE | EN oben rechts. **Jeder neue sichtbare Text braucht beide Sprachen** – UI-Texte in `AP.STRINGS` (`js/i18n.js`), englische Upgrade-Texte in `AP.UPGRADE_EN` (gleiche Reihenfolge wie in `upgrades.js`).
 
@@ -31,7 +32,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 - IDs: Stufenbuchstabe + Position, also AA…AZ, BA…BZ. Kauf nur der Reihe nach (immer das nächste ungekaufte).
 - Das letzte Upgrade jeder Stufe (`xZ`, kind `unlock:X`) schaltet die nächste Stufe frei.
-- Mehr als 2 Upgrades nach dem nächsten offenen werden als „???“ angezeigt.
+- Mehr als 2 Upgrades nach dem nächsten offenen werden als „???“ angezeigt. Einmal aufgedeckte bleiben auch nach Resets sichtbar (`state.revealed`).
 - Effekt-Arten (`kind`) sind oben in `js/upgrades.js` dokumentiert: `base`, `points`, `pow`, `gain:X`, `mod`, `keep:X`, `autobuy:X`, `autoreset:X`, `passive:X`, `unlock:X`.
 - **Querverweise** auf frühere Upgrades über `kind: 'mod'` mit `target`, `op` (`mul`/`pow`) und `value`, z.B. CE: „Effekt von AR ×5“. Wird ein Upgrade verschoben, alle `target`-Verweise und Beschreibungen (DE + EN) prüfen.
 - Kosten stehen in `COSTS` am Ende von `upgrades.js`, Reset-Formeln (`req`, `exp`) in `LAYERS` in `game.js`.
