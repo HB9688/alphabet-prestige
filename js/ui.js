@@ -143,20 +143,35 @@
     else box.scrollTop = top;
   }
 
+  // Effektwert passend zur Upgrade-Art formatieren
+  function fmtEffect(kind, v) {
+    if (kind === 'base') return '+' + fmt(v, 2) + t('pointsPerSec');
+    if (kind === 'points' || kind.startsWith('gain:')) return '×' + fmt(v, 2);
+    if (kind === 'pow') return '^' + fmt(v, 3);
+    if (kind.startsWith('passive:')) return fmt(v * 100, 1) + t('perSec');
+    return '';
+  }
+
   function effectText(id) {
     const u = AP.UPGRADES[id];
-    const k = u.kind;
-    if (k === 'mod') {
-      const txt = effectText(u.target);
-      return txt ? t('modCurrent', { id: u.target }) + txt : '';
+    if (u.kind === 'mod') {
+      // Querverweis: Effekt des Ziels, vor dem Kauf als „vorher → nachher“
+      const target = AP.UPGRADES[u.target];
+      const v = game.effect(u.target);
+      if (v === null) return '';
+      if (game.has(id)) return t('modCurrent', { id: u.target }) + fmtEffect(target.kind, v);
+      const after = u.op === 'pow' ? Math.pow(v, u.value) : v * u.value;
+      return t('modCurrent', { id: u.target }) + fmtEffect(target.kind, v) + ' → ' + fmtEffect(target.kind, after);
     }
     const v = game.effect(id);
-    if (v === null) return '';
-    if (k === 'base') return '+' + fmt(v, 2) + t('pointsPerSec');
-    if (k === 'points' || k.startsWith('gain:')) return '×' + fmt(v, 2);
-    if (k === 'pow') return '^' + fmt(v, 3);
-    if (k.startsWith('passive:')) return fmt(v * 100, 1) + t('perSec');
-    return '';
+    return v === null ? '' : fmtEffect(u.kind, v);
+  }
+
+  // Beschreibung; bei Querverweisen steht hinter der Ziel-ID deren eigener Effekt, z. B. „Effekt von BM (B-Gewinn ×2) ×2“
+  function descText(u) {
+    const d = AP.upDesc(u);
+    if (u.kind !== 'mod') return d;
+    return d.replace(u.target, u.target + ' (' + AP.upDesc(AP.UPGRADES[u.target]) + ')');
   }
 
   function updateUpgrades(L) {
@@ -170,7 +185,7 @@
         (owned ? ' bought' : '') + (r.id === next ? ' next ' + (can ? 'can' : 'cant') : '') + (!known ? ' unknown' : '');
       if (r.el.className !== cls) r.el.className = cls;
       const name = known ? AP.upName(r.u) : t('unknown');
-      const desc = known ? AP.upDesc(r.u) : t('unknownDesc');
+      const desc = known ? descText(r.u) : t('unknownDesc');
       const eff = known ? effectText(r.id) : '';
       const btn = owned ? t('bought') : known ? (r.u.cost === 0 ? t('free') : fmt(r.u.cost) + ' ' + L) : t('unknown');
       const key = name + desc + eff + btn + can;
