@@ -22,6 +22,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - **Überschrift** „Alphabet Prestige“ mit Verlauf über alle 26 Farben, genau auf Textbreite (`display:inline-block`), darunter eine weiche Palettenleiste.
 - **Tabs** wie Browser-Tabs, einer pro freigeschalteter Stufe, plus ein Schloss-Tab für die nächste. Tabs werden schmaler, je mehr Stufen frei sind; bei wenig Platz nur der Buchstabe.
 - **Layout:** links festes Panel (Punkte, Stufenpunkte, Reset, Automatisierung, Speichern). Rechts ein hinterlegtes Feld mit der Upgrade-Liste: **immer 8 Einträge sichtbar – die letzten 5 gekauften und die nächsten 3 offenen**; **mobil (< 760 px) nur 3 – das zuletzt gekaufte und die nächsten 2 offenen**; alle 26 per Scrollen erreichbar. Nach einem Kauf scrollt die Liste automatisch nach.
+- **Mobil (< 760 px):** Speichern/Export/Import/Neu starten liegen nicht im Panel, sondern im Zahnrad-Menü oben links (Zeile mit DE | EN), rechts neben dem Zahnrad „Gespeichert …“. Punkte-Felder kompakter. Am Desktop bleibt das Speicher-Feld im Panel.
 - **Sprache:** Umschalter DE | EN oben rechts. **Jeder neue sichtbare Text braucht beide Sprachen** – UI-Texte in `AP.STRINGS` (`js/i18n.js`), englische Upgrade-Texte in `AP.UPGRADE_EN` (gleiche Reihenfolge wie in `upgrades.js`).
 
 ## Upgrades – Konventionen
