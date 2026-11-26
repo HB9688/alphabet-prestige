@@ -22,7 +22,17 @@
       teaseD: false,
       tab: 'A',
       lang: 'de',
-      auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 }
+      auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 },
+      // Statistik. since = Spielzeit, ab der gezählt wird (bei alten Spielständen > 0)
+      stats: {
+        since: null,
+        pointsTotal: 0,
+        pointsMax: 0,
+        buys: 0,
+        bestGain: { A: 0, B: 0, C: 0 },
+        fastest: { A: null, B: null, C: null },
+        firstReset: { A: null, B: null, C: null }
+      }
     };
   }
 
@@ -39,6 +49,11 @@
 
   function createGame(saved) {
     const s = merge(defaultState(), saved);
+    if (s.stats.since === null) {
+      // Alter Spielstand: Statistik startet jetzt; erster Reset früherer Stufen ist unbekannt (-1)
+      s.stats.since = s.time;
+      LAYER_KEYS.forEach(L => { if (s.layers[L].resets > 0) s.stats.firstReset[L] = -1; });
+    }
     const UP = AP.UPGRADES;
 
     const game = {
@@ -107,20 +122,31 @@
         return Math.pow(src / cfg.req, cfg.exp) * game.product('gain:' + L);
       },
       gain(L) { return Math.floor(game.rawGain(L)); },
-      // Benötigte Menge der Quelle, damit der Reset-Gewinn um 1 steigt (Umkehrung von rawGain)
-      nextAt(L) {
+      // Anzeige-Ziele für den Reset-Gewinn: unter 10 jeder ganze Punkt, danach feste Stufen 10, 20, 50, 100, 200, 500 …
+      // Liefert [letzte erreichte Stufe, nächste Stufe]; die nächste bleibt stehen, bis sie erreicht ist.
+      gainSteps(L) {
+        const g = game.gain(L);
+        if (g < 10) return [g, g + 1];
+        const p = Math.pow(10, Math.floor(Math.log10(g)));
+        const steps = [1, 2, 5, 10].map(m => m * p);
+        const i = steps.findIndex(v => v > g);
+        return [steps[i - 1], steps[i]];
+      },
+      nextTarget(L) { return game.gainSteps(L)[1]; },
+      // Benötigte Menge der Quelle für einen Reset-Gewinn von target (Umkehrung von rawGain)
+      nextAt(L, target) {
         const cfg = LAYERS[L];
-        const mult = game.product('gain:' + L);
-        return cfg.req * Math.pow((game.gain(L) + 1) / mult, 1 / cfg.exp);
+        if (target === undefined) target = game.nextTarget(L);
+        return cfg.req * Math.pow(target / game.product('gain:' + L), 1 / cfg.exp);
       },
 
-      // Fortschritt 0..1 bis zur Mindestmenge bzw. bis zum nächsten ganzen Punkt
+      // Fortschritt 0..1 bis zur Mindestmenge bzw. von der letzten bis zur nächsten Gewinn-Stufe
       progress(L) {
         const cfg = LAYERS[L];
         const src = game.sourceAmt(L);
         if (src < cfg.req) return src / cfg.req;
-        const raw = game.rawGain(L);
-        return raw - Math.floor(raw);
+        const [from, to] = game.gainSteps(L);
+        return (game.rawGain(L) - from) / (to - from);
       },
 
       nextId(L) {
@@ -139,6 +165,7 @@
         const u = UP[id];
         s.layers[u.layer].amt -= u.cost;
         s.layers[u.layer].up[id] = true;
+        s.stats.buys++;
         game.invalidate();
         if (u.kind.startsWith('unlock:')) {
           const next = u.kind.slice(7);
@@ -161,6 +188,10 @@
         const g = game.gain(L);
         if (!game.canReset(L)) return false;
         const lay = s.layers[L];
+        const st = s.stats, dur = s.time - lay.lastReset;
+        st.bestGain[L] = Math.max(st.bestGain[L], g);
+        if (st.fastest[L] === null || dur < st.fastest[L]) st.fastest[L] = dur;
+        if (st.firstReset[L] === null) st.firstReset[L] = s.time;
         lay.amt += g;
         lay.total += g;
         lay.resets++;
@@ -184,7 +215,10 @@
 
       tick(dt) {
         s.time += dt;
-        s.points += game.pointRate() * dt;
+        const produced = game.pointRate() * dt;
+        s.points += produced;
+        s.stats.pointsTotal += produced;
+        if (s.points > s.stats.pointsMax) s.stats.pointsMax = s.points;
         for (const L of ['A', 'B']) {
           if (!game.isUnlocked(L)) continue;
           const frac = game.maxOf('passive:' + L);

@@ -28,7 +28,13 @@
       importPrompt: 'Speicherstand einfügen:',
       invalid: 'Ungültiger Speicherstand.',
       confirmReset: 'Wirklich komplett neu starten? Der gesamte Fortschritt geht verloren.',
-      language: 'Sprache'
+      language: 'Sprache',
+      stats: 'Statistik', close: 'Schließen', stGeneral: 'Allgemein', stLayer: 'Stufe {L}',
+      stPlayTime: 'Spielzeit', stPointsTotal: 'Punkte insgesamt erzeugt', stPointsMax: 'Höchster Punktestand',
+      stRate: 'Punkte pro Sekunde', stBuys: 'Upgrade-Käufe insgesamt', stUnlocked: 'Freigeschaltete Stufen',
+      stResets: 'Resets', stTotal: '{L}-Punkte insgesamt erhalten', stBest: 'Bester Reset',
+      stFastest: 'Schnellster Reset', stSince: 'Seit letztem Reset', stFirst: 'Erster Reset nach',
+      stUpgrades: 'Upgrades', stNote: 'Einige Werte werden erst seit {t} Spielzeit gezählt.'
     },
     en: {
       points: 'Points',
@@ -57,7 +63,13 @@
       importPrompt: 'Paste save data:',
       invalid: 'Invalid save data.',
       confirmReset: 'Really restart from scratch? All progress will be lost.',
-      language: 'Language'
+      language: 'Language',
+      stats: 'Statistics', close: 'Close', stGeneral: 'General', stLayer: 'Layer {L}',
+      stPlayTime: 'Play time', stPointsTotal: 'Total points produced', stPointsMax: 'Highest points',
+      stRate: 'Points per second', stBuys: 'Total upgrade purchases', stUnlocked: 'Unlocked layers',
+      stResets: 'Resets', stTotal: 'Total {L} points earned', stBest: 'Best reset',
+      stFastest: 'Fastest reset', stSince: 'Since last reset', stFirst: 'First reset after',
+      stUpgrades: 'Upgrades', stNote: 'Some values have only been tracked since {t} of play time.'
     }
   };
 

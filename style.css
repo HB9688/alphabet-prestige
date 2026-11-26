@@ -12,6 +12,9 @@
 
 * { box-sizing: border-box; }
 
+/* hidden-Attribut gewinnt immer, auch gegen display-Regeln einzelner Klassen */
+[hidden] { display: none !important; }
+
 html, body { height: 100%; margin: 0; }
 
 body {
@@ -56,7 +59,9 @@ h1 {
 }
 
 /* Zahnrad-Menü (nur mobil sichtbar) */
-.settings { display: none; position: relative; align-items: center; gap: 8px; }
+/* Icons oben links: Zahnrad (nur mobil) und Statistik (immer) */
+.settings { display: flex; position: absolute; top: 12px; left: 0; z-index: 2; align-items: center; gap: 8px; }
+#gearBtn, #saveInfoTop { display: none; }
 .gear {
   display: flex; align-items: center; justify-content: center;
   width: 30px; height: 28px; padding: 0;
@@ -68,6 +73,28 @@ h1 {
 .menu { flex: 0 0 100%; margin-top: 8px; }
 .menu[hidden] { display: none; }
 .menu #saveInfo { display: none; }
+
+/* Statistik-Feld: am Desktop schwebend unter dem Icon, mobil eigene Zeile (schiebt Inhalt nach unten) */
+.stats {
+  position: absolute; top: 50px; left: 0; z-index: 20;
+  width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 70px); overflow-y: auto;
+  text-align: left; box-shadow: 0 8px 24px rgba(0, 0, 0, .6);
+}
+.stats[hidden] { display: none; }
+.stats-head { display: flex; justify-content: space-between; align-items: center; }
+.stats-close {
+  font: inherit; font-size: 20px; line-height: 1; padding: 0 4px;
+  border: none; background: transparent; color: var(--muted); cursor: pointer;
+}
+.stats-close:hover { color: var(--stage); }
+.stats h3 {
+  margin: 12px 0 4px; font-size: 13px; font-weight: 600; color: var(--stage);
+  border-bottom: 1px solid var(--line); padding-bottom: 3px;
+}
+.stats dl { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; margin: 0; font-size: 13px; }
+.stats dt { color: #b5b5b5; }
+.stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.stats .note { margin-top: 10px; font-size: 12px; color: var(--muted); }
 
 /* Sprachumschalter oben rechts */
 .lang {
@@ -264,7 +291,10 @@ h1 {
   body { overflow: auto; height: auto; }
   #stage { grid-template-columns: 1fr; }
   .topbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 6px; text-align: left; }
-  .settings { display: flex; }
+  .settings { position: static; }
+  #gearBtn, #saveInfoTop { display: inline-flex; }
+  #saveInfoTop { display: inline; }
+  .stats { position: static; flex: 0 0 100%; width: auto; max-height: none; margin-top: 8px; }
   .lang { position: static; border: none; }
   .lang button { border: 1px solid var(--line); border-radius: 6px; margin-left: 4px; }
 
