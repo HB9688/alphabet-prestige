@@ -256,12 +256,20 @@
     if (MOBILE.matches) $('settingsMenu').appendChild(card);
     else { $('panel').appendChild(card); toggleMenu(false); }
   }
+  // Das Menü blendet sich 5 s nach dem Öffnen bzw. nach der letzten Aktion darin selbst aus.
+  const MENU_TIMEOUT = 5000;
+  let menuTimer = 0;
+  function armMenuTimer() {
+    clearTimeout(menuTimer);
+    if (!$('settingsMenu').hidden) menuTimer = setTimeout(() => toggleMenu(false), MENU_TIMEOUT);
+  }
   function toggleMenu(open) {
     $('settingsMenu').hidden = !open;
+    armMenuTimer();
     $('gearBtn').setAttribute('aria-expanded', open);
   }
   $('gearBtn').addEventListener('click', e => { e.stopPropagation(); toggleMenu($('settingsMenu').hidden); });
-  $('settingsMenu').addEventListener('click', e => { if (e.target.closest('button')) toggleMenu(false); });
+  ['click', 'pointerdown', 'keydown'].forEach(ev => $('settingsMenu').addEventListener(ev, armMenuTimer));
   document.addEventListener('click', e => { if (!$('settings').contains(e.target) && !$('settingsMenu').contains(e.target)) toggleMenu(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleMenu(false); });
   MOBILE.addEventListener('change', placeSaveCard);
