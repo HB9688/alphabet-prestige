@@ -28,7 +28,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - **Auto-Kauf:** Häkchen „Auto-Kauf“ im Kopf der Upgrade-Liste zwischen „X-Upgrades“ und „n / 26 gekauft“ (sobald freigeschaltet). Ein Feld „Automatisierung“ gibt es nicht mehr.
 - **Passive Erzeugung:** Sobald eine Stufe passiv erzeugt (`passive:X`), steht unter ihren Punkten „+x A /s“; „Nächster Reset“ mit Balken entfällt, der Prestige-Knopf bleibt.
 - **Reset-Anzeige:** Unter dem Balken steht der Bedarf für den nächsten Punkt (ab Gewinn 100 feste Zielstufen 100 → 200 → 500 …). Ist die nächsthöhere Stufe frei **und** das Freischalt-Upgrade (xZ) dieses Durchgangs gekauft oder bezahlbar, steht dort stattdessen der Bedarf für deren nächsten Punkt.
-- **Reset-Knöpfe:** Sind alle Upgrades der Stufe darunter gekauft und erzeugt sie noch nicht passiv, steht neben dem Prestige-Knopf (2/3 Breite) ein kleiner Reset-Knopf für diese Stufe (1/3), z. B. auf Tab B „+1,2e16 A“.
+- **Reset-Knöpfe:** Sind alle Upgrades der Stufe darunter gekauft und lohnt sich ein manueller Reset dort (ohne passive Erzeugung immer, mit passiver Erzeugung solange der Gewinn ≥ ihr Bestand ist), steht neben dem Prestige-Knopf (2/3 Breite) ein kleiner Reset-Knopf für diese Stufe (1/3), z. B. auf Tab B „+1,2e16 A“.
 - **Sprache:** Umschalter DE | EN oben rechts. **Jeder neue sichtbare Text braucht beide Sprachen** – UI-Texte in `AP.STRINGS` (`js/i18n.js`), englische Upgrade-Texte in `AP.UPGRADE_EN` (gleiche Reihenfolge wie in `upgrades.js`).
 
 ## Upgrades – Konventionen

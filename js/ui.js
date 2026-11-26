@@ -244,10 +244,12 @@
     const lower = AP.LETTERS.slice(0, AP.LETTERS.indexOf(L)).split('').map(x => t('resetsLower', { L: x })).join('');
     btn.title = t('resets', { lower });
 
-    // Zweiter Knopf für die Stufe darunter: alle ihre Upgrades gekauft, aber noch kein Auto-Reset dafür
+    // Zweiter Knopf für die Stufe darunter: alle ihre Upgrades gekauft und ein manueller Reset lohnt sich –
+    // ohne passive Erzeugung immer, mit passiver Erzeugung nur, solange der Reset ihre Punkte mindestens verdoppelt
     const P = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) - 1];
     const prevBtn = $('resetPrevBtn');
-    prevBtn.hidden = !(P && game.count(P) === AP.UPGRADE_ORDER[P].length && !game.hasKind('passive:' + P));
+    const worth = P && (!game.hasKind('passive:' + P) || (game.gain(P) >= 1 && game.gain(P) >= game.amt(P)));
+    prevBtn.hidden = !(P && game.count(P) === AP.UPGRADE_ORDER[P].length && worth);
     if (!prevBtn.hidden) {
       const pg = game.gain(P);
       prevBtn.textContent = pg >= 1 ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P });
