@@ -57,7 +57,11 @@
         <div class="bar"><div class="fill" id="bar"></div></div>
         <div class="sub" id="req"></div>
         <div class="sub" id="reqNext"></div>
-        <button id="resetBtn" class="btn wide">A-Prestige</button>
+        <!-- Reset-Knöpfe: aktuelle Stufe (2/3) und ggf. die Stufe darunter (1/3), solange sie keinen Auto-Reset hat -->
+        <div class="reset-row">
+          <button id="resetBtn" class="btn wide">A-Prestige</button>
+          <button id="resetPrevBtn" class="btn wide" hidden></button>
+        </div>
       </section>
 
       <section class="card" id="autoCard" hidden>
