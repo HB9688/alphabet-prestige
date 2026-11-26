@@ -244,7 +244,9 @@ h1 {
   align-self: start;
   max-height: 100%;
 }
-.uphead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.uphead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.autobuy { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.autobuy input { margin: 0; }
 
 #upgrades {
   position: relative;

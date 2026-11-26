@@ -66,7 +66,6 @@
 
       <section class="card" id="autoCard" hidden>
         <div class="label" data-i18n="automation">Automatisierung</div>
-        <label class="toggle" id="autoBuyRow"><input type="checkbox" id="autoBuy"> <span data-i18n="autoBuy"></span></label>
         <label class="toggle" id="autoResetRow"><input type="checkbox" id="autoReset"> <span data-i18n="autoReset"></span>
           <input type="number" id="autoFactor" min="0" step="0.1" value="1"> <span data-i18n="timesStock"></span></label>
       </section>
@@ -83,6 +82,8 @@
     <section class="card upcard">
       <div class="uphead">
         <div class="label" id="upTitle">A-Upgrades</div>
+        <!-- Auto-Kauf (ab BG) direkt im Kopf der Upgrade-Liste -->
+        <label class="autobuy" id="autoBuyRow" hidden><input type="checkbox" id="autoBuy"> <span data-i18n="autoBuy"></span></label>
         <div class="sub" id="upCount"></div>
       </div>
       <div id="upgrades"></div>

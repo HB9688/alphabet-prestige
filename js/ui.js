@@ -257,7 +257,7 @@
 
     const canAutoBuy = game.hasKind('autobuy:' + L);
     const canAutoReset = game.hasKind('autoreset:' + L);
-    $('autoCard').hidden = !(canAutoBuy || canAutoReset);
+    $('autoCard').hidden = !canAutoReset;
     $('autoBuyRow').hidden = !canAutoBuy;
     $('autoResetRow').hidden = !canAutoReset;
     if (canAutoBuy) $('autoBuy').checked = !!s.auto['buy' + L];
