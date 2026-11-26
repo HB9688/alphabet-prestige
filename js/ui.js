@@ -51,6 +51,8 @@
       b.setAttribute('aria-pressed', b.dataset.lang === AP.lang);
     });
     $('langSwitch').setAttribute('aria-label', t('language'));
+    $('gearBtn').setAttribute('aria-label', t('settings'));
+    $('gearBtn').title = t('settings');
     tabsKey = '';
     rows.forEach(r => { r.last = ''; });
   }
@@ -243,8 +245,27 @@
   });
 
   function showSaved(ok) {
-    $('saveInfo').textContent = ok ? t('saved', { t: new Date().toLocaleTimeString(AP.lang === 'en' ? 'en-US' : 'de-DE') }) : t('saveFail');
+    const text = ok ? t('saved', { t: new Date().toLocaleTimeString(AP.lang === 'en' ? 'en-US' : 'de-DE') }) : t('saveFail');
+    $('saveInfo').textContent = text;
+    $('saveInfoTop').textContent = text;
   }
+
+  // Mobil: Speicher-Optionen wandern ins Zahnrad-Menü, am Desktop bleiben sie im Panel.
+  function placeSaveCard() {
+    const card = $('saveCard');
+    if (MOBILE.matches) $('settingsMenu').appendChild(card);
+    else { $('panel').appendChild(card); toggleMenu(false); }
+  }
+  function toggleMenu(open) {
+    $('settingsMenu').hidden = !open;
+    $('gearBtn').setAttribute('aria-expanded', open);
+  }
+  $('gearBtn').addEventListener('click', e => { e.stopPropagation(); toggleMenu($('settingsMenu').hidden); });
+  $('settingsMenu').addEventListener('click', e => { if (e.target.closest('button')) toggleMenu(false); });
+  document.addEventListener('click', e => { if (!$('settings').contains(e.target)) toggleMenu(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleMenu(false); });
+  MOBILE.addEventListener('change', placeSaveCard);
+  placeSaveCard();
   $('saveBtn').addEventListener('click', () => showSaved(game.save()));
   $('exportBtn').addEventListener('click', () => {
     const text = game.exportSave();

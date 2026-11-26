@@ -55,6 +55,25 @@ h1 {
   box-shadow: 0 0 18px rgba(255, 136, 0, .25);
 }
 
+/* Zahnrad-Menü (nur mobil sichtbar) */
+.settings { display: none; position: relative; align-items: center; gap: 8px; }
+.gear {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 28px; padding: 0;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.gear svg { width: 17px; height: 17px; }
+.gear[aria-expanded="true"], .gear:hover { color: var(--stage); background: var(--stage-soft); }
+.settings .menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 10;
+  width: max-content; max-width: calc(100vw - 32px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .6);
+}
+.settings .menu[hidden] { display: none; }
+.settings .menu .card { margin: 0; }
+.settings .menu #saveInfo { display: none; }
+
 /* Sprachumschalter oben rechts */
 .lang {
   position: absolute;
@@ -249,8 +268,18 @@ h1 {
 @media (max-width: 760px) {
   body { overflow: auto; height: auto; }
   #stage { grid-template-columns: 1fr; }
-  .lang { position: static; justify-content: flex-end; border: none; margin-bottom: 6px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; text-align: left; }
+  .settings { display: flex; }
+  .lang { position: static; border: none; }
   .lang button { border: 1px solid var(--line); border-radius: 6px; margin-left: 4px; }
+
+  /* Punkte-Felder kompakter */
+  #panel { gap: 8px; }
+  #panel > .card { padding: 8px 12px; }
+  #panel .big { font-size: 22px; line-height: 1.3; }
+  #panel .label.spaced { margin-top: 8px; }
+  #panel .sub:empty { display: none; }
+  #panel .btn.wide { margin-top: 8px; padding: 7px; }
 
   /* Upgrade-Zeilen zweistöckig: oben ID, Name, Button – darunter Text über volle Breite */
   :root { --rows: 3; --row-h: 118px; }
