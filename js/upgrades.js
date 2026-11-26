@@ -44,8 +44,8 @@
   ];
 
   const B = [
-    { name: 'B-Bonus', kind: 'points', effect: () => 10, desc: 'Punkte ×10' },
-    { name: 'B-Ernte', kind: 'gain:A', effect: () => 5, desc: 'A-Gewinn ×5' },
+    { name: 'B-Bonus', kind: 'points', effect: () => 5, desc: 'Punkte ×5' },
+    { name: 'B-Ernte', kind: 'gain:A', effect: () => 3, desc: 'A-Gewinn ×3' },
     { name: 'Gedächtnis', kind: 'keep:A', effect: () => 8, desc: 'AA–AH bleiben beim B-Reset erhalten' },
     { name: 'B-Resonanz', kind: 'points', effect: g => Math.sqrt(g.amt('B') + 1), desc: 'Punkte steigen mit deinen B-Punkten' },
     { name: 'Sammlerstolz', kind: 'mod', target: 'AH', op: 'mul', value: 3, desc: 'Effekt von AH ×3' },
