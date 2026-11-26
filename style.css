@@ -65,14 +65,9 @@ h1 {
 }
 .gear svg { width: 17px; height: 17px; }
 .gear[aria-expanded="true"], .gear:hover { color: var(--stage); background: var(--stage-soft); }
-.settings .menu {
-  position: absolute; top: calc(100% + 6px); left: 0; z-index: 10;
-  width: max-content; max-width: calc(100vw - 32px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .6);
-}
-.settings .menu[hidden] { display: none; }
-.settings .menu .card { margin: 0; }
-.settings .menu #saveInfo { display: none; }
+.menu { flex: 0 0 100%; margin-top: 8px; }
+.menu[hidden] { display: none; }
+.menu #saveInfo { display: none; }
 
 /* Sprachumschalter oben rechts */
 .lang {
@@ -268,7 +263,7 @@ h1 {
 @media (max-width: 760px) {
   body { overflow: auto; height: auto; }
   #stage { grid-template-columns: 1fr; }
-  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; text-align: left; }
+  .topbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 6px; text-align: left; }
   .settings { display: flex; }
   .lang { position: static; border: none; }
   .lang button { border: 1px solid var(--line); border-radius: 6px; margin-left: 4px; }

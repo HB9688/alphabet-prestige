@@ -262,7 +262,7 @@
   }
   $('gearBtn').addEventListener('click', e => { e.stopPropagation(); toggleMenu($('settingsMenu').hidden); });
   $('settingsMenu').addEventListener('click', e => { if (e.target.closest('button')) toggleMenu(false); });
-  document.addEventListener('click', e => { if (!$('settings').contains(e.target)) toggleMenu(false); });
+  document.addEventListener('click', e => { if (!$('settings').contains(e.target) && !$('settingsMenu').contains(e.target)) toggleMenu(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleMenu(false); });
   MOBILE.addEventListener('change', placeSaveCard);
   placeSaveCard();
