@@ -92,8 +92,8 @@
       ['Gate to B', 'Unlocks prestige layer B']
     ],
     B: [
-      ['B Bonus', 'Points ×10'],
-      ['B Harvest', 'A gain ×5'],
+      ['B Bonus', 'Points ×5'],
+      ['B Harvest', 'A gain ×3'],
       ['Memory', 'AA–AH are kept on B reset'],
       ['B Resonance', 'Points increase with your B points'],
       ["Collector's Pride", 'AH effect ×3'],

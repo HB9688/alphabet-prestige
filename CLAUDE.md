@@ -48,8 +48,8 @@ Zielzeiten für einen aktiven Spieler (vom Nutzer vorgegeben: ~1 h bis zur erste
 |---|---|---|
 | erster A-Reset | ~10 s | 0:10 |
 | AZ / erster B-Reset | ~55–60 min | 54 / 56 min |
-| BZ | ~2 h | 2:02 h |
-| CZ | ~3,5 h | 3:30 h |
+| BZ | ~4 h (vom Nutzer so akzeptiert) | 4:02 h |
+| CZ | ~6 h | 5:54 h |
 
 Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
 
