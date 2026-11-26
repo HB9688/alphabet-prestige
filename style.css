@@ -1,0 +1,254 @@
+:root {
+  --bg-top: #0d0d0d;
+  --bg-bottom: #000;
+  --surface: #151515;
+  --surface-2: #1c1c1c;
+  --line: #2e2e2e;
+  --muted: #8a8a8a;
+  --stage: #FFF4E6;          /* wird per JS auf die Farbe der aktiven Stufe gesetzt */
+  --stage-soft: rgba(255, 244, 230, .12);
+  --gradient: linear-gradient(90deg, #FFF4E6, #6B1200); /* wird per JS mit allen 26 Farben ersetzt */
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)) fixed;
+  background-color: #000;
+  color: var(--stage);
+  font: 15px/1.5 "Segoe UI", system-ui, sans-serif;
+  padding: 0 16px 16px;
+  overflow: hidden;
+}
+
+header { text-align: center; padding: 18px 0 12px; position: relative; }
+
+/* Überschrift: Verlauf über alle 26 Farben, exakt auf die Textbreite gelegt */
+h1 {
+  display: inline-block;
+  margin: 0;
+  padding: 0 .1em .08em;
+  font-size: clamp(30px, 6vw, 56px);
+  font-weight: 800;
+  letter-spacing: .03em;
+  line-height: 1.15;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, .12));
+}
+
+/* Farbpalette mit weichen Übergängen unter der Überschrift */
+.palette {
+  width: min(560px, 80%);
+  height: 10px;
+  margin: 8px auto 0;
+  border-radius: 999px;
+  background: var(--gradient);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  box-shadow: 0 0 18px rgba(255, 136, 0, .25);
+}
+
+/* Sprachumschalter oben rechts */
+.lang {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.lang button {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.lang button.active { background: var(--stage-soft); color: var(--stage); }
+.lang button:hover:not(.active) { color: #ccc; }
+
+/* ---------- Tabs (Browser-Stil, schrumpfen mit der Anzahl) ---------- */
+#tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 8px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.tab {
+  container-type: inline-size;
+  flex: 1 1 0;
+  max-width: 180px;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: #0e0e0e;
+  color: var(--tab-color);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: .6;
+  transition: opacity .15s, background .15s;
+}
+.tab:hover { opacity: .9; }
+.tab.active {
+  background: var(--surface);
+  opacity: 1;
+  margin-bottom: -1px;
+  height: 41px;
+}
+.tab .letter { font-size: 17px; }
+.tab .long { font-weight: 400; font-size: 13px; }
+.tab.locked { color: #555; cursor: default; opacity: 1; background: #0a0a0a; }
+.tab.locked svg { width: 14px; height: 14px; }
+.tab.pulse { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: inset 0 0 0 1px var(--tab-color); } }
+
+@container (max-width: 110px) {
+  .tab .long { display: none; }
+}
+
+/* ---------- Inhalt (Zwei Spalten) ---------- */
+#stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0 0 12px 12px;
+}
+
+#panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.card {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.card.small { display: flex; flex-wrap: wrap; gap: 6px; }
+.card.small .sub { width: 100%; }
+
+.label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.label.spaced { margin-top: 12px; }
+.big { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sub { color: var(--muted); font-size: 13px; min-height: 1em; }
+
+.bar { height: 7px; background: #262626; border-radius: 4px; margin: 8px 0 4px; overflow: hidden; }
+.bar .fill { height: 100%; width: 0; background: var(--stage); border-radius: 4px; transition: width .1s linear; }
+
+.btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--stage);
+  background: transparent;
+  color: var(--stage);
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) { background: var(--stage-soft); }
+.btn:disabled { opacity: .35; cursor: default; }
+.btn.wide { width: 100%; margin-top: 10px; padding: 9px; font-size: 15px; font-weight: 600; }
+.btn.danger { border-color: #a33; color: #e66; }
+
+.toggle { display: block; font-size: 13px; margin-top: 8px; cursor: pointer; }
+.toggle input[type="number"] {
+  width: 56px; background: #111; color: var(--stage); border: 1px solid var(--line);
+  border-radius: 5px; padding: 1px 4px; font: inherit;
+}
+
+/* ---------- Upgrade-Feld: 8 Einträge sichtbar, Rest per Scrollen ---------- */
+:root { --row-h: 62px; --row-gap: 6px; }
+
+.upcard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  align-self: start;
+  max-height: 100%;
+}
+.uphead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+
+#upgrades {
+  position: relative;
+  flex: 0 1 auto;
+  height: calc(8 * var(--row-h) + 7 * var(--row-gap));
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  scroll-behavior: smooth;
+  scrollbar-color: #3a3a3a transparent;
+}
+
+.up {
+  flex: 0 0 var(--row-h);
+  height: var(--row-h);
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #141414;
+  line-height: 1.3;
+  overflow: hidden;
+}
+.up .id { font-size: 18px; font-weight: 700; }
+.up .name { font-weight: 600; }
+.up .desc, .up .eff { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.up .desc { font-size: 13px; color: #b5b5b5; }
+.up .eff { font-size: 12px; color: var(--muted); }
+.up .btn { min-width: 96px; }
+
+.up.bought { background: var(--stage-soft); border-color: transparent; }
+.up.bought .btn { border-color: transparent; opacity: .8; }
+.up.next.can { border-color: var(--stage); }
+.up.unknown { opacity: .4; }
+.up.unknown .desc, .up.unknown .name { color: var(--muted); }
+.up.unlock .name::after { content: " ★"; }
+
+.done-note { text-align: center; color: var(--muted); font-size: 13px; }
+.done-note:not(:empty) { padding-top: 8px; }
+
+/* ---------- Mobil ---------- */
+@media (max-width: 760px) {
+  body { overflow: auto; height: auto; }
+  #stage { grid-template-columns: 1fr; }
+  .lang { position: static; justify-content: flex-end; border: none; margin-bottom: 6px; }
+  .lang button { border: 1px solid var(--line); border-radius: 6px; margin-left: 4px; }
+}

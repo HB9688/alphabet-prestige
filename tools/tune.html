@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Balance-Tuner</title>
+<style>body{background:#111;color:#eee;font:13px/1.5 monospace;padding:16px}</style>
+</head>
+<body>
+<h1>Alphabet Prestige – Balance-Tuner</h1>
+<p>Sucht Kosten und Reset-Anforderungen so, dass jeder Kauf zum Zielzeitpunkt erreicht wird. Ergebnis in upgrades.js / game.js übernehmen.</p>
+<pre id="out">läuft …</pre>
+<script src="../js/palette.js"></script>
+<script src="../js/upgrades.js"></script>
+<script src="../js/game.js"></script>
+<script src="simcore.js"></script>
+<script>
+const out = document.getElementById('out');
+const round2 = v => { if (v <= 0) return v; const e = Math.floor(Math.log10(v)); const m = Math.round(v / Math.pow(10, e - 1)); return m * Math.pow(10, e - 1); };
+
+// Schritte in zeitlicher Reihenfolge
+const steps = [];
+const intA = i => 10 + 9.5 * i, intB = i => 60 + 8 * i, intC = i => 60 + 8 * i;
+const tuneA = location.search.includes('all');
+if (tuneA) AP.UPGRADE_ORDER.A.forEach((id, i) => { if (i >= 2) steps.push({ key: id, kind: 'cost', id, interval: intA(i) }); });
+steps.push({ key: 'reset:B', kind: 'req', layer: 'B', interval: 150 });
+AP.UPGRADE_ORDER.B.forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: intB(i) }));
+steps.push({ key: 'reset:C', kind: 'req', layer: 'C', interval: 150 });
+AP.UPGRADE_ORDER.C.forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: intC(i) }));
+
+// alles noch nicht getunte sperren
+steps.forEach(st => { if (st.kind === 'cost') AP.UPGRADES[st.id].cost = Infinity; else AP.LAYERS[st.layer].req = Infinity; });
+const setP = (st, v) => { if (st.kind === 'cost') AP.UPGRADES[st.id].cost = v; else AP.LAYERS[st.layer].req = v; };
+
+let prevT = tuneA ? AP.simulate({ stopAt: 'AB', dt: 1 }).bought.AB : AP.simulate({ stopAt: 'AZ', dt: 1 }).bought.AZ;
+let prevLog = 0;
+let k = 0;
+const results = [];
+function stepOnce() {
+  if (k >= steps.length) return finish();
+  const st = steps[k];
+  const target = prevT + st.interval;
+  const timeFor = v => {
+    setP(st, v);
+    const r = AP.simulate({ stopAt: st.key, dt: 1, maxTime: target * 1.5 + 600 });
+    if (!r.done) return Infinity;
+    return st.kind === 'cost' ? r.bought[st.id] : r.firstReset[st.layer];
+  };
+  let lo = st.kind === 'cost' ? Math.max(0, prevLog) : 0, hi = lo + (st.kind === 'cost' ? 12 : 40);
+  for (let it = 0; it < 18; it++) {
+    const mid = (lo + hi) / 2;
+    if (timeFor(Math.pow(10, mid)) < target) lo = mid; else hi = mid;
+  }
+  let v = round2(Math.pow(10, lo));
+  if (st.kind === 'cost' && v < 1) v = 1;
+  const t = timeFor(v);
+  if (st.kind === 'cost') prevLog = Math.log10(Math.max(v, 1));
+  if (st.key === 'reset:B' || st.key === 'reset:C') prevLog = 0;
+  results.push({ key: st.key, v, t, target });
+  out.textContent = results.map(r => r.key.padEnd(8) + String(r.v).padEnd(10) + AP.fmtT(r.t) + '  (Ziel ' + AP.fmtT(r.target) + ')').join('\n');
+  prevT = isFinite(t) ? t : target;
+  k++;
+  setTimeout(stepOnce, 0);
+}
+function finish() {
+  const costs = { A: AP.UPGRADE_ORDER.A.map(id => AP.UPGRADES[id].cost), B: AP.UPGRADE_ORDER.B.map(id => AP.UPGRADES[id].cost), C: AP.UPGRADE_ORDER.C.map(id => AP.UPGRADES[id].cost) };
+  const fmt = a => '[' + a.map(v => v >= 1e4 ? v.toExponential().replace('e+', 'e') : String(v)).join(', ') + ']';
+  window.tuneResult = 'A: ' + fmt(costs.A) + ',\nB: ' + fmt(costs.B) + ',\nC: ' + fmt(costs.C) + '\nreqB: ' + AP.LAYERS.B.req + '  reqC: ' + AP.LAYERS.C.req;
+  out.textContent += '\n\nFERTIG\n' + window.tuneResult;
+}
+setTimeout(stepOnce, 0);
+</script>
+</body>
+</html>

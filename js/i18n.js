@@ -1,0 +1,161 @@
+// Texte Deutsch / Englisch. Upgrade-Texte auf Deutsch stehen in upgrades.js, hier nur die englischen.
+(function (AP) {
+  AP.STRINGS = {
+    de: {
+      points: 'Punkte',
+      pointsLower: 'Punkte',
+      layerPoints: '{L}-Punkte',
+      nextReset: 'Nächster Reset',
+      prestige: '{L}-Prestige',
+      needs: 'Benötigt {req} {src} ({have})',
+      from: 'aus {have} {src}',
+      passive: '+{v} /s passiv',
+      automation: 'Automatisierung',
+      autoBuy: 'Upgrades automatisch kaufen',
+      autoReset: 'Automatisch resetten, wenn Gewinn ≥',
+      timesStock: '× Bestand',
+      save: 'Speichern', export: 'Export', import: 'Import', restart: 'Neu starten',
+      saved: 'Gespeichert {t}', saveFail: 'Speichern nicht möglich',
+      bought: '✓ gekauft', free: 'Kostenlos',
+      unknown: '???', unknownDesc: 'Noch unbekannt',
+      current: 'Aktuell: ', wouldBe: 'Würde wirken: ', modCurrent: '{id} ',
+      perSec: ' % pro Sekunde', pointsPerSec: ' Punkte/s',
+      resets: 'Setzt Punkte{lower} zurück', resetsLower: ', {L}-Punkte und {L}-Upgrades',
+      lockBy: 'Freischalten durch {id}', lockSoon: 'Stufe {L} folgt bald', soon: 'bald',
+      doneNote: 'Stufe D folgt bald …',
+      upgrades: '{L}-Upgrades', boughtCount: '{n} / 26 gekauft',
+      exportPrompt: 'Speicherstand (in die Zwischenablage kopiert):',
+      importPrompt: 'Speicherstand einfügen:',
+      invalid: 'Ungültiger Speicherstand.',
+      confirmReset: 'Wirklich komplett neu starten? Der gesamte Fortschritt geht verloren.',
+      language: 'Sprache'
+    },
+    en: {
+      points: 'Points',
+      pointsLower: 'points',
+      layerPoints: '{L} points',
+      nextReset: 'Next reset',
+      prestige: '{L} prestige',
+      needs: 'Requires {req} {src} ({have})',
+      from: 'from {have} {src}',
+      passive: '+{v} /s passive',
+      automation: 'Automation',
+      autoBuy: 'Buy upgrades automatically',
+      autoReset: 'Reset automatically when gain ≥',
+      timesStock: '× current amount',
+      save: 'Save', export: 'Export', import: 'Import', restart: 'Restart',
+      saved: 'Saved {t}', saveFail: 'Saving not possible',
+      bought: '✓ bought', free: 'Free',
+      unknown: '???', unknownDesc: 'Not discovered yet',
+      current: 'Current: ', wouldBe: 'Would give: ', modCurrent: '{id} ',
+      perSec: '% per second', pointsPerSec: ' points/s',
+      resets: 'Resets points{lower}', resetsLower: ', {L} points and {L} upgrades',
+      lockBy: 'Unlocked by {id}', lockSoon: 'Layer {L} coming soon', soon: 'soon',
+      doneNote: 'Layer D coming soon …',
+      upgrades: '{L} upgrades', boughtCount: '{n} / 26 bought',
+      exportPrompt: 'Save data (copied to clipboard):',
+      importPrompt: 'Paste save data:',
+      invalid: 'Invalid save data.',
+      confirmReset: 'Really restart from scratch? All progress will be lost.',
+      language: 'Language'
+    }
+  };
+
+  // [Name, Beschreibung] in Reihenfolge xA..xZ
+  AP.UPGRADE_EN = {
+    A: [
+      ['Generator', 'Generates 1 point per second'],
+      ['Doubling', 'Points ×2'],
+      ['A Resonance', 'Points increase with your A points'],
+      ['First Harvest', 'A gain ×1.5'],
+      ['Tripling', 'Points ×3'],
+      ['Self-Reference', 'Points increase with themselves'],
+      ['Double Harvest', 'A gain ×2'],
+      ['Collection', 'Points +25% per A upgrade bought'],
+      ['Echo', 'AB effect ×2'],
+      ['Point Fertilizer', 'A gain increases with your points'],
+      ['Fivefold', 'Points ×5'],
+      ['Amplified Resonance', 'AC effect ^1.4'],
+      ['Triple Harvest', 'A gain ×3'],
+      ['Patience', 'Points increase with time since the last A reset'],
+      ['Tenfold', 'Points ×10'],
+      ['Harvest Helper', 'A gain × square root of A upgrades bought'],
+      ['Fourfold', 'Points ×4'],
+      ['A Core', 'Points increase again with your A points'],
+      ['Fivefold Harvest', 'A gain ×5'],
+      ['Great Echo', 'AE effect ×5'],
+      ['Twenty-Five', 'Points ×25'],
+      ['A Interest', 'A gain increases with your A points'],
+      ['Power', 'Points/s ^1.05'],
+      ['Tenfold Harvest', 'A gain ×10'],
+      ['Hundredfold', 'Points ×100'],
+      ['Gate to B', 'Unlocks prestige layer B']
+    ],
+    B: [
+      ['B Bonus', 'Points ×10'],
+      ['B Harvest', 'A gain ×5'],
+      ['Memory', 'AA–AH are kept on B reset'],
+      ['B Resonance', 'Points increase with your B points'],
+      ["Collector's Pride", 'AH effect ×3'],
+      ['B Fertilizer', 'A gain increases with your B points'],
+      ['Automaton A', 'Buys A upgrades automatically'],
+      ['B Tenfold', 'Points ×10'],
+      ['Squared Self-Reference', 'AF effect ^2'],
+      ['B Triple Harvest', 'A gain ×3'],
+      ['Total Memory', 'All A upgrades are kept on B reset'],
+      ['Upgrade Mass', 'Points × (1 + A and B upgrades bought)'],
+      ['Double B Harvest', 'B gain ×2'],
+      ['Fission', 'AR effect ×3'],
+      ['B Fiftyfold', 'Points ×50'],
+      ['B Fivefold Harvest', 'A gain ×5'],
+      ['A Echo in B', 'B gain increases with your A points'],
+      ['Deep Resonance', 'BD effect ^1.5'],
+      ['B Core', 'Points increase again with your B points'],
+      ['Triple B Harvest', 'B gain ×3'],
+      ['Hundred Echo', 'AY effect ×10'],
+      ['B Interest', 'A gain increases again with your B points'],
+      ['Thousandfold', 'Points ×1000'],
+      ['Fivefold B Harvest', 'B gain ×5'],
+      ['Harvest Echo', 'BM effect ×2'],
+      ['Gate to C', 'Unlocks prestige layer C']
+    ],
+    C: [
+      ['C Bonus', 'Points ×100'],
+      ['C Harvest', 'B gain ×3'],
+      ['Long-Term Memory', 'BA–BK are kept on C reset'],
+      ['Reset Automaton A', 'Performs A resets automatically'],
+      ['Fusion', 'AR effect ×5'],
+      ['A Spring', 'Gain 10% of the A reset gain per second, without resetting'],
+      ['C Resonance', 'Points × (C points + 1)'],
+      ['C Fertilizer', 'B gain increases with your C points'],
+      ['Automaton B', 'Buys B upgrades automatically'],
+      ['Bubbling Spring', 'CF effect ×10'],
+      ['Total Long-Term Memory', 'All B upgrades are kept on C reset'],
+      ['Reset Automaton B', 'Performs B resets automatically'],
+      ['Double C Harvest', 'C gain ×2'],
+      ['C Thousandfold', 'Points ×1000'],
+      ['B Spring', 'Gain 10% of the B reset gain per second, without resetting'],
+      ['Mass Squared', 'BL effect ^2'],
+      ['C Hundredfold Harvest', 'A gain ×100'],
+      ['C Tenfold Harvest', 'B gain ×10'],
+      ['B Echo in C', 'C gain increases with your B points'],
+      ['Full B Spring', 'CO effect ×10'],
+      ['Great Power', 'Points/s ^1.1'],
+      ['Triple C Harvest', 'C gain ×3'],
+      ['Power Echo', 'AW effect ^2'],
+      ['C Interest', 'B gain increases again with your C points'],
+      ['Fivefold C Harvest', 'C gain ×5'],
+      ['Gate to D', 'Unlocks prestige layer D (coming soon)']
+    ]
+  };
+
+  AP.lang = 'de';
+  AP.t = function (key, vars) {
+    let s = (AP.STRINGS[AP.lang] || AP.STRINGS.de)[key];
+    if (s === undefined) s = AP.STRINGS.de[key] || key;
+    if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+    return s;
+  };
+  AP.upName = u => AP.lang === 'en' ? AP.UPGRADE_EN[u.layer][u.index][0] : u.name;
+  AP.upDesc = u => AP.lang === 'en' ? AP.UPGRADE_EN[u.layer][u.index][1] : u.desc;
+})(globalThis.AP = globalThis.AP || {});

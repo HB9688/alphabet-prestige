@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alphabet Prestige</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="lang" role="group" id="langSwitch">
+      <button type="button" data-lang="de">DE</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+    <h1 id="title">Alphabet Prestige</h1>
+    <div class="palette" id="palette" aria-hidden="true"></div>
+  </header>
+
+  <nav id="tabs" role="tablist"></nav>
+
+  <main id="stage">
+    <aside id="panel">
+      <section class="card">
+        <div class="label" data-i18n="points">Punkte</div>
+        <div class="big" id="points">0</div>
+        <div class="sub" id="rate">+0 /s</div>
+      </section>
+
+      <section class="card">
+        <div class="label" id="layerLabel">A-Punkte</div>
+        <div class="big" id="layerAmt">0</div>
+        <div class="sub" id="passive"></div>
+        <div class="label spaced" data-i18n="nextReset">Nächster Reset</div>
+        <div id="gain">+0 A</div>
+        <div class="bar"><div class="fill" id="bar"></div></div>
+        <div class="sub" id="req"></div>
+        <button id="resetBtn" class="btn wide">A-Prestige</button>
+      </section>
+
+      <section class="card" id="autoCard" hidden>
+        <div class="label" data-i18n="automation">Automatisierung</div>
+        <label class="toggle" id="autoBuyRow"><input type="checkbox" id="autoBuy"> <span data-i18n="autoBuy"></span></label>
+        <label class="toggle" id="autoResetRow"><input type="checkbox" id="autoReset"> <span data-i18n="autoReset"></span>
+          <input type="number" id="autoFactor" min="0" step="0.1" value="1"> <span data-i18n="timesStock"></span></label>
+      </section>
+
+      <section class="card small">
+        <button class="btn" id="saveBtn" data-i18n="save">Speichern</button>
+        <button class="btn" id="exportBtn" data-i18n="export">Export</button>
+        <button class="btn" id="importBtn" data-i18n="import">Import</button>
+        <button class="btn danger" id="hardResetBtn" data-i18n="restart">Neu starten</button>
+        <div class="sub" id="saveInfo"></div>
+      </section>
+    </aside>
+
+    <section class="card upcard">
+      <div class="uphead">
+        <div class="label" id="upTitle">A-Upgrades</div>
+        <div class="sub" id="upCount"></div>
+      </div>
+      <div id="upgrades"></div>
+      <div class="done-note" id="doneNote"></div>
+    </section>
+  </main>
+
+  <script src="js/palette.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/upgrades.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
