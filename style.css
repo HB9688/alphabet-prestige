@@ -222,6 +222,10 @@ h1 {
 .btn:hover:not(:disabled) { background: var(--stage-soft); }
 .btn:disabled { opacity: .35; cursor: default; }
 .btn.wide { width: 100%; margin-top: 10px; padding: 9px; font-size: 15px; font-weight: 600; }
+.reset-row { display: flex; gap: 8px; margin-top: 10px; }
+.reset-row .btn.wide { margin-top: 0; min-width: 0; }
+#resetBtn { flex: 2 1 0; }
+#resetPrevBtn { flex: 1 1 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn.danger { border-color: #a33; color: #e66; }
 
 .toggle { display: block; font-size: 13px; margin-top: 8px; cursor: pointer; }
@@ -305,7 +309,8 @@ h1 {
   #panel .big { font-size: 22px; line-height: 1.3; }
   #panel .label.spaced { margin-top: 8px; }
   #panel .sub:empty { display: none; }
-  #panel .btn.wide { margin-top: 8px; padding: 7px; }
+  #panel .btn.wide { padding: 7px; }
+  #panel .reset-row { margin-top: 8px; }
 
   /* Upgrade-Zeilen zweistöckig: oben ID, Name, Button – darunter Text über volle Breite */
   :root { --rows: 3; --row-h: 118px; }

@@ -226,6 +226,18 @@
     const lower = AP.LETTERS.slice(0, AP.LETTERS.indexOf(L)).split('').map(x => t('resetsLower', { L: x })).join('');
     btn.title = t('resets', { lower });
 
+    // Zweiter Knopf für die Stufe darunter: alle ihre Upgrades gekauft, aber noch kein Auto-Reset dafür
+    const P = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) - 1];
+    const prevBtn = $('resetPrevBtn');
+    prevBtn.hidden = !(P && game.count(P) === AP.UPGRADE_ORDER[P].length && !game.hasKind('autoreset:' + P));
+    if (!prevBtn.hidden) {
+      const pg = game.gain(P);
+      prevBtn.textContent = pg >= 1 ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P });
+      prevBtn.disabled = !game.canReset(P);
+      prevBtn.title = t('prestige', { L: P });
+      prevBtn.setAttribute('aria-label', t('prestige', { L: P }) + (pg >= 1 ? ' (+' + fmt(pg) + ')' : ''));
+    }
+
     const canAutoBuy = game.hasKind('autobuy:' + L);
     const canAutoReset = game.hasKind('autoreset:' + L);
     $('autoCard').hidden = !(canAutoBuy || canAutoReset);
@@ -247,6 +259,10 @@
 
   // ---------- Steuerung ----------
   $('resetBtn').addEventListener('click', () => { if (game.reset(game.state.tab)) render(); });
+  $('resetPrevBtn').addEventListener('click', () => {
+    const P = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(game.state.tab) - 1];
+    if (P && game.reset(P)) render();
+  });
   $('autoBuy').addEventListener('change', e => { game.state.auto['buy' + game.state.tab] = e.target.checked; });
   $('autoReset').addEventListener('change', e => { game.state.auto['reset' + game.state.tab] = e.target.checked; });
   $('autoFactor').addEventListener('change', e => {
