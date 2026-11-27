@@ -323,15 +323,25 @@
     document.body.classList.toggle('is-paused', p);
     $('pausedInfo').hidden = !p;
     $('pauseBtn').setAttribute('aria-pressed', p);
-    $('pauseBtn').title = t(p ? 'resume' : 'pause');
+    $('pauseBtn').title = t(p ? 'resume' : 'pause') + ' – ' + t('spaceKey');
     $('pauseBtn').setAttribute('aria-label', t(p ? 'resume' : 'pause'));
   }
-  $('pauseBtn').addEventListener('click', () => {
+  function togglePause() {
     game.state.paused = !game.state.paused;
     applyPause();
     game.save();
     render();
-  });
+  }
+  $('pauseBtn').addEventListener('click', togglePause);
+  // Leertaste = Pause. In der Capture-Phase abfangen, damit sie weder scrollt noch einen fokussierten Knopf auslöst.
+  const isSpace = e => e.key === ' ' || e.code === 'Space';
+  const inField = e => e.target.closest && e.target.closest('input, textarea, select, [contenteditable]');
+  document.addEventListener('keydown', e => {
+    if (!isSpace(e) || inField(e) || e.ctrlKey || e.altKey || e.metaKey) return;
+    e.preventDefault();
+    if (!e.repeat) togglePause();
+  }, true);
+  document.addEventListener('keyup', e => { if (isSpace(e) && !inField(e)) e.preventDefault(); }, true);
 
   // ---------- Statistik ----------
   let statsKey = '';
