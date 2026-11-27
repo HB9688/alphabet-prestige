@@ -242,7 +242,7 @@
     btn.textContent = t('prestige', { L }) + (gain >= 1 ? ' (+' + fmt(gain) + ')' : '');
     btn.disabled = !game.canReset(L);
     const lower = AP.LETTERS.slice(0, AP.LETTERS.indexOf(L)).split('').map(x => t('resetsLower', { L: x })).join('');
-    btn.title = t('resets', { lower });
+    btn.title = t('resets', { lower }) + ' – ' + t('shortcut', { k: L });
 
     // Zweiter Knopf für die Stufe darunter: alle ihre Upgrades gekauft und ein manueller Reset lohnt sich –
     // ohne passive Erzeugung immer, mit passiver Erzeugung nur, solange der Reset ihre Punkte mindestens verdoppelt
@@ -254,7 +254,7 @@
       const pg = game.gain(P);
       prevBtn.textContent = pg >= 1 ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P });
       prevBtn.disabled = !game.canReset(P);
-      prevBtn.title = t('prestige', { L: P });
+      prevBtn.title = t('prestige', { L: P }) + ' – ' + t('shortcut', { k: P });
       prevBtn.setAttribute('aria-label', t('prestige', { L: P }) + (pg >= 1 ? ' (+' + fmt(pg) + ')' : ''));
     }
 
@@ -284,12 +284,6 @@
     $('saveInfoTop').textContent = text;
   }
 
-  // Mobil: Speicher-Optionen wandern ins Zahnrad-Menü, am Desktop bleiben sie im Panel.
-  function placeSaveCard() {
-    const card = $('saveCard');
-    if (MOBILE.matches) $('settingsMenu').appendChild(card);
-    else { $('panel').appendChild(card); toggleMenu(false); }
-  }
   // Das Menü blendet sich 5 s nach dem Öffnen bzw. nach der letzten Aktion darin selbst aus.
   const MENU_TIMEOUT = 5000;
   let menuTimer = 0;
@@ -311,6 +305,16 @@
     if (!$('statsPanel').contains(e.target)) toggleStats(false);
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleMenu(false); toggleStats(false); } });
+
+  // Tastenkürzel: Buchstabe einer freigeschalteten Stufe = Prestige-Reset dieser Stufe (A, B, C …)
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.altKey || e.metaKey || e.repeat) return;
+    if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+    const L = e.key.length === 1 ? e.key.toUpperCase() : '';
+    if (!game.LAYERS[L] || !game.isUnlocked(L)) return;
+    e.preventDefault();
+    if (game.reset(L)) render();
+  });
 
   // ---------- Statistik ----------
   let statsKey = '';
@@ -359,8 +363,6 @@
     if (st.since > 0) html += '<div class="note">' + t('stNote', { t: fmtTime(st.since) }) + '</div>';
     if (html !== statsKey) { statsKey = html; $('statsBody').innerHTML = html; }
   }
-  MOBILE.addEventListener('change', placeSaveCard);
-  placeSaveCard();
   $('saveBtn').addEventListener('click', () => showSaved(game.save()));
   $('exportBtn').addEventListener('click', () => {
     const text = game.exportSave();
