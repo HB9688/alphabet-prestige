@@ -1,3 +1,4 @@
+// © 2026 HB9688 – All rights reserved. See LICENSE.
 // Simulation eines aktiven Spielers – gemeinsam genutzt von sim.html und tune.html.
 (function (AP) {
   AP.fmtT = function (t) { const m = Math.floor(t / 60), s = Math.floor(t % 60); return m + ':' + String(s).padStart(2, '0'); };

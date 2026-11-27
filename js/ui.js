@@ -1,3 +1,4 @@
+// © 2026 HB9688 – All rights reserved. See LICENSE.
 // Darstellung: Tabs, Panel, Upgrade-Feld, Sprache, Spielschleife.
 (function (AP) {
   const $ = id => document.getElementById(id);
@@ -344,6 +345,7 @@
     const date = d => new Date(d + 'T12:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
     $('infoBody').innerHTML =
       '<p class="credits">' + esc(t('credits', { a: '\u0000' })).replace('\u0000', '<strong>' + esc(AP.AUTHOR) + '</strong>') + '</p>' +
+      '<p class="sub copyright">' + esc(t('copyright', { y: AP.COPYRIGHT_YEAR, a: AP.AUTHOR })) + '</p>' +
       '<p class="sub"><a href="' + AP.REPO_URL + '" target="_blank" rel="noopener">' + esc(t('source')) + '</a></p>' +
       '<div class="version">' + esc(t('version', { v: AP.VERSION })) + '</div>' +
       '<h3>' + esc(t('changelog')) + '</h3>' +

@@ -14,6 +14,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 - Repository: `HB9688/alphabet-prestige` (öffentlich). **GitHub Pages** veröffentlicht `main` (Wurzelverzeichnis) unter https://hb9688.github.io/alphabet-prestige/.
 - Alles, was auf `main` landet, ist ~1 Minute später live. Vor dem Merge auf `main` im Browser testen.
+- **Lizenz:** alle Rechte vorbehalten (`LICENSE`, © 2026 HB9688). Keine Open-Source-Lizenz hinzufügen, keinen fremden Code und keine Assets mit unklarer Lizenz einbauen. Neue Dateien bekommen den Kopfkommentar `© 2026 HB9688 – All rights reserved. See LICENSE.`
 - **Cache:** GitHub Pages lässt Browser Dateien ~10 min zwischenspeichern. Neues `index.html` mit altem `ui.js` aus dem Cache bricht das Spiel (keine Tabs/Upgrades). Deshalb hängen CSS und Skripte in `index.html` mit `?v=N` an – **bei jeder Änderung an CSS/JS die Zahl überall um 1 erhöhen.**
 
 ## Versionen
