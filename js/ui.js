@@ -557,7 +557,11 @@
   }, 50);
 
   // ---------- Debug (Konsole) ----------
-  window.debug = {
+  // Nur zum Testen: lokale Datei, localhost, Vorschau-Link raw.githack.com.
+  // Überall sonst (GitHub Pages, galaxy.click, itch.io …, eingebettet oder hochgeladen) gibt es kein window.debug.
+  const TEST_HOSTS = ['localhost', '127.0.0.1', 'raw.githack.com'];
+  const IS_TEST = location.protocol === 'file:' || TEST_HOSTS.includes(location.hostname);
+  if (IS_TEST) window.debug = {
     get game() { return game; },
     unlock(L) {
       const s = game.state;

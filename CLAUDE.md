@@ -84,6 +84,7 @@ Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
 
 ## Testen
 
+- **`debug` gibt es nur auf Testadressen** (file://, localhost, raw.githack.com – Liste `TEST_HOSTS` in `ui.js`); auf GitHub Pages und jeder Spieleplattform (eingebettet oder hochgeladen) ist es aus. Neue Testadresse? In `TEST_HOSTS` eintragen.
 - Im Browser öffnen; in der Konsole: `debug.unlock('C')`, `debug.add('A', 1e6)` oder `debug.add('A', '1e500')` (`'P'` für Punkte), `debug.game` für den State (Werte sind Decimal: `debug.game.state.points.toString()`).
 - Test-Spielstände danach mit „Neu starten“ oder `localStorage.clear()` entfernen.
 - Desktop- und Handybreite (< 760 px) prüfen.
