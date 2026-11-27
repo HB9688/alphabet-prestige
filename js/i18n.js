@@ -26,6 +26,8 @@
       invalid: 'Ungültiger Speicherstand.',
       confirmReset: 'Wirklich komplett neu starten? Der gesamte Fortschritt geht verloren.',
       language: 'Sprache', shortcut: 'Taste {k}',
+      info: 'Info', help: 'Hilfe', version: 'Version {v}', changelog: 'Versionsgeschichte',
+      credits: 'Ein Spiel von {a} – entwickelt mit Hilfe von Claude (Anthropic).', source: 'Quellcode auf GitHub',
       pause: 'Pause', resume: 'Fortsetzen', paused: 'Pausiert', spaceKey: 'Leertaste',
       pausedTitle: 'Spiel pausiert',
       pausedTextDesk: 'Fortsetzen mit der Leertaste, dem Pause-Knopf oben links oder einfach mit Klick auf „Fortsetzen“.',
@@ -62,6 +64,8 @@
       invalid: 'Invalid save data.',
       confirmReset: 'Really restart from scratch? All progress will be lost.',
       language: 'Language', shortcut: 'Key {k}',
+      info: 'Info', help: 'Help', version: 'Version {v}', changelog: 'Version history',
+      credits: 'A game by {a} – developed with the help of Claude (Anthropic).', source: 'Source code on GitHub',
       pause: 'Pause', resume: 'Resume', paused: 'Paused', spaceKey: 'Space',
       pausedTitle: 'Game paused',
       pausedTextDesk: 'Resume with the space bar, the pause button at the top left or simply by clicking “Resume”.',
@@ -163,10 +167,10 @@
     ]
   };
 
-  AP.lang = 'de';
+  AP.lang = 'en'; // Primärsprache
   AP.t = function (key, vars) {
-    let s = (AP.STRINGS[AP.lang] || AP.STRINGS.de)[key];
-    if (s === undefined) s = AP.STRINGS.de[key] || key;
+    let s = (AP.STRINGS[AP.lang] || AP.STRINGS.en)[key];
+    if (s === undefined) s = AP.STRINGS.en[key] || key;
     if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
     return s;
   };
