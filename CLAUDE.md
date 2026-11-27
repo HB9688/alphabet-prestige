@@ -5,16 +5,16 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 ## Technik – feste Regeln
 
 - **Kein Build, keine Abhängigkeiten, keine ES-Module, kein `fetch`.** Das Spiel muss per Doppelklick auf `index.html` (file://) laufen. Alle Skripte sind klassische `<script>`-Dateien und hängen an den globalen Namensraum `globalThis.AP`.
-- Ladereihenfolge in `index.html`: `palette.js` → `i18n.js` → `info.js` → `upgrades.js` → `game.js` → `ui.js`.
+- Ladereihenfolge in `index.html`: `lib/break_infinity.min.js` → `palette.js` → `i18n.js` → `info.js` → `upgrades.js` → `game.js` → `ui.js` (Tools: Bibliothek ebenfalls zuerst).
 - `game.js` enthält nur Logik ohne DOM, damit die Balance-Tools in `tools/` sie wiederverwenden können. DOM-Code gehört nach `ui.js`.
-- Zahlen sind JS-`Number` (bis ~1e308). Wird das für spätere Stufen zu knapp, auf eine Big-Number-Bibliothek umstellen (z.B. break_infinity.js als lokale Datei, nicht per CDN).
+- **Große Zahlen:** Punkte, Stufenpunkte, Gewinne, Kosten, `req` und Upgrade-Effekte sind `Decimal` aus **break_infinity.js** (`js/lib/`, MIT, unverändert, Lizenzkopf in der Datei). **Nie** mit `< > + - * /` verrechnen (`valueOf` liefert Text!) – immer `.lt/.gte/.add/.mul/.pow/.log10()` bzw. `AP.D(x)`. `.log10()` liefert eine normale Zahl. Zeiten, Zähler, Anteile (`passive`, `keep`) bleiben `Number`. Gespeichert wird Decimal als Text; `merge()` wandelt beim Laden zurück (alte Spielstände mit Zahlen funktionieren). Kosten in `COSTS` als Zahl oder Text (`'1.2e400'`). `game.normalize()` wandelt versehentlich gesetzte Zahlen (z. B. aus der Konsole) um.
 - **Spielstände nicht kaputt machen:** gespeichert wird in `localStorage` unter `alphabetPrestige.save.v1`. Neue State-Felder in `defaultState()` ergänzen – `merge()` füllt sie bei alten Spielständen auf. Upgrade-IDs nie umbenennen oder umsortieren, ohne eine Migration einzubauen.
 
 ## Deployment
 
 - Repository: `HB9688/alphabet-prestige` (öffentlich). **GitHub Pages** veröffentlicht `main` (Wurzelverzeichnis) unter https://hb9688.github.io/alphabet-prestige/.
 - Alles, was auf `main` landet, ist ~1 Minute später live. Vor dem Merge auf `main` im Browser testen.
-- **Lizenz:** alle Rechte vorbehalten (`LICENSE`, © 2026 HB9688). Keine Open-Source-Lizenz hinzufügen, keinen fremden Code und keine Assets mit unklarer Lizenz einbauen. Neue Dateien bekommen den Kopfkommentar `© 2026 HB9688 – All rights reserved. See LICENSE.`
+- **Lizenz:** alle Rechte vorbehalten (`LICENSE`, © 2026 HB9688). Keine Open-Source-Lizenz hinzufügen, keinen fremden Code und keine Assets mit unklarer Lizenz einbauen. Einzige Fremdkomponente: `js/lib/break_infinity.min.js` (MIT, © 2019 Timothy Stiles) – in `LICENSE` vermerkt. Neue Dateien bekommen den Kopfkommentar `© 2026 HB9688 – All rights reserved. See LICENSE.`
 - **Cache:** GitHub Pages lässt Browser Dateien ~10 min zwischenspeichern. Neues `index.html` mit altem `ui.js` aus dem Cache bricht das Spiel (keine Tabs/Upgrades). Deshalb hängen CSS und Skripte in `index.html` mit `?v=N` an – **bei jeder Änderung an CSS/JS die Zahl überall um 1 erhöhen.**
 
 ## Versionen
@@ -80,6 +80,6 @@ Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
 
 ## Testen
 
-- Im Browser öffnen; in der Konsole: `debug.unlock('C')`, `debug.add('A', 1e6)` (`'P'` für Punkte), `debug.game` für den State.
+- Im Browser öffnen; in der Konsole: `debug.unlock('C')`, `debug.add('A', 1e6)` oder `debug.add('A', '1e500')` (`'P'` für Punkte), `debug.game` für den State (Werte sind Decimal: `debug.game.state.points.toString()`).
 - Test-Spielstände danach mit „Neu starten“ oder `localStorage.clear()` entfernen.
 - Desktop- und Handybreite (< 760 px) prüfen.

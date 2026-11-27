@@ -3,12 +3,15 @@
 // Versionsschema 0.MINOR.PATCH: MINOR = größere Änderung mit Eintrag in AP.CHANGELOG,
 // PATCH = kleine Änderung/Fix ohne Eintrag. Bei jedem Merge auf main AP.VERSION erhöhen.
 (function (AP) {
-  AP.VERSION = '0.6.0';
+  AP.VERSION = '0.7.0';
   AP.AUTHOR = 'HB9688';
   AP.COPYRIGHT_YEAR = 2026;
 
   // Neueste zuerst; nur größere Versionen, kurz gehalten.
   AP.CHANGELOG = [
+    { v: '0.7.0', date: '2026-11-27',
+      en: 'Internal: support for very large numbers (preparation for new layers)',
+      de: 'Intern: Unterstützung sehr großer Zahlen (Vorbereitung für neue Stufen)' },
     { v: '0.6.0', date: '2026-11-27',
       en: 'Offline progress (up to 8 h) with a welcome-back summary',
       de: 'Offline-Fortschritt (bis 8 h) mit Willkommen-zurück-Übersicht' },

@@ -14,20 +14,22 @@
   AP.lang = game.state.lang === 'de' ? 'de' : 'en'; // Englisch = Primärsprache
 
   // ---------- Zahlenformat ----------
+  // akzeptiert Zahl oder Decimal; ab 1e6 wissenschaftlich („1,23e45“, auch weit über 1e308)
   function fmt(n, digits) {
-    if (n === Infinity) return '∞';
-    if (!isFinite(n)) return '–';
-    const a = Math.abs(n);
+    const d = AP.D(n);
+    if (!isFinite(d.mantissa) || !isFinite(d.exponent)) return '–';
     const locale = AP.lang === 'en' ? 'en-US' : 'de-DE';
-    if (a < 1e6) {
-      const d = digits !== undefined ? digits : (a < 100 && n % 1 !== 0 ? 1 : 0);
-      return n.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: d });
+    if (d.abs().lt(1e6)) {
+      const x = d.toNumber(), a = Math.abs(x);
+      const dg = digits !== undefined ? digits : (a < 100 && x % 1 !== 0 ? 1 : 0);
+      return x.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: dg });
     }
-    const e = Math.floor(Math.log10(a));
-    const m = (n / Math.pow(10, e)).toFixed(2);
-    return (AP.lang === 'en' ? m : m.replace('.', ',')) + 'e' + e;
+    let e = d.exponent, m = Math.abs(d.mantissa);
+    if (m.toFixed(2) === '10.00') { m = 1; e += 1; } // Rundung 9,999 → 1,00e(e+1)
+    const ms = (d.mantissa < 0 ? '-' : '') + m.toFixed(2);
+    return (AP.lang === 'en' ? ms : ms.replace('.', ',')) + 'e' + e;
   }
-  const fmtAmt = n => fmt(n < 1e6 ? Math.floor(n + 1e-9) : n);
+  const fmtAmt = n => { const d = AP.D(n); return fmt(d.lt(1e6) ? d.add(1e-9).floor() : d); };
 
   function hexToRgba(hex, a) {
     const v = parseInt(hex.slice(1), 16);
@@ -157,7 +159,7 @@
     if (kind === 'base') return '+' + fmt(v, 2) + t('pointsPerSec');
     if (kind === 'points' || kind.startsWith('gain:')) return '×' + fmt(v, 2);
     if (kind === 'pow') return '^' + fmt(v, 3);
-    if (kind.startsWith('passive:')) return fmt(v * 100, 1) + t('perSec');
+    if (kind.startsWith('passive:')) return fmt(AP.D(v).mul(100), 1) + t('perSec');
     return '';
   }
 
@@ -169,7 +171,7 @@
       const v = game.effect(u.target);
       if (v === null) return '';
       if (game.has(id)) return t('modCurrent', { id: u.target }) + fmtEffect(target.kind, v);
-      const after = u.op === 'pow' ? Math.pow(v, u.value) : v * u.value;
+      const after = u.op === 'pow' ? v.pow(u.value) : v.mul(u.value);
       return t('modCurrent', { id: u.target }) + fmtEffect(target.kind, v) + ' → ' + fmtEffect(target.kind, after);
     }
     const v = game.effect(id);
@@ -196,7 +198,7 @@
       const name = known ? AP.upName(r.u) : t('unknown');
       const desc = known ? descText(r.u) : t('unknownDesc');
       const eff = known ? effectText(r.id) : '';
-      const btn = owned ? t('bought') : known ? (r.u.cost === 0 ? t('free') : fmt(r.u.cost) + ' ' + L) : t('unknown');
+      const btn = owned ? t('bought') : known ? (r.u.cost.eq(0) ? t('free') : fmt(r.u.cost) + ' ' + L) : t('unknown');
       const key = name + desc + eff + btn + can;
       if (key === r.last) return;
       r.last = key;
@@ -220,6 +222,7 @@
   }
 
   function render() {
+    game.normalize();
     const s = game.state;
     const L = s.tab;
     $('points').textContent = fmtAmt(s.points);
@@ -228,7 +231,7 @@
     $('layerAmt').textContent = fmtAmt(game.amt(L));
 
     const frac = game.maxOf('passive:' + L);
-    $('passive').textContent = frac > 0 ? t('passive', { v: fmt(game.rawGain(L) * frac, 1), L }) : '';
+    $('passive').textContent = frac > 0 ? t('passive', { v: fmt(game.rawGain(L).mul(frac), 1), L }) : '';
     $('resetInfo').hidden = frac > 0;
 
     const gain = game.gain(L);
@@ -240,15 +243,15 @@
     // das Freischalt-Upgrade (xZ) dieses Durchgangs gekauft oder bezahlbar ist
     const H = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) + 1];
     const gate = AP.UPGRADES[AP.UPGRADE_ORDER[L][25]];
-    const showNext = H && game.isUnlocked(H) && (game.has(gate.id) || game.amt(L) >= gate.cost);
-    $('req').textContent = showNext ? '' : src < cfg.req
+    const showNext = H && game.isUnlocked(H) && (game.has(gate.id) || game.amt(L).gte(gate.cost));
+    $('req').textContent = showNext ? '' : src.lt(cfg.req)
       ? t('needs', { req: fmt(cfg.req), src: sourceName(L), have: fmtAmt(src) })
       : t('nextAt', { n: fmt(game.nextTarget(L)), L, next: fmt(game.nextAt(L)), src: sourceName(L), have: fmtAmt(src) });
     $('reqNext').textContent = showNext
       ? t('nextAt', { n: fmt(game.nextTarget(H)), L: H, next: fmt(game.nextAt(H)), src: sourceName(H), have: fmtAmt(game.sourceAmt(H)) })
       : '';
     const btn = $('resetBtn');
-    btn.textContent = t('prestige', { L }) + (gain >= 1 ? ' (+' + fmt(gain) + ')' : '');
+    btn.textContent = t('prestige', { L }) + (gain.gte(1) ? ' (+' + fmt(gain) + ')' : '');
     btn.disabled = !game.canReset(L);
     const lower = AP.LETTERS.slice(0, AP.LETTERS.indexOf(L)).split('').map(x => t('resetsLower', { L: x })).join('');
     btn.title = t('resets', { lower }) + ' – ' + t('shortcut', { k: L });
@@ -257,14 +260,14 @@
     // ohne passive Erzeugung immer, mit passiver Erzeugung nur, solange der Reset ihre Punkte mindestens verdoppelt
     const P = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) - 1];
     const prevBtn = $('resetPrevBtn');
-    const worth = P && (!game.hasKind('passive:' + P) || (game.gain(P) >= 1 && game.gain(P) >= game.amt(P)));
+    const worth = P && (!game.hasKind('passive:' + P) || (game.gain(P).gte(1) && game.gain(P).gte(game.amt(P))));
     prevBtn.hidden = !(P && game.count(P) === AP.UPGRADE_ORDER[P].length && worth);
     if (!prevBtn.hidden) {
       const pg = game.gain(P);
-      prevBtn.textContent = pg >= 1 ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P });
+      prevBtn.textContent = pg.gte(1) ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P });
       prevBtn.disabled = !game.canReset(P);
       prevBtn.title = t('prestige', { L: P }) + ' – ' + t('shortcut', { k: P });
-      prevBtn.setAttribute('aria-label', t('prestige', { L: P }) + (pg >= 1 ? ' (+' + fmt(pg) + ')' : ''));
+      prevBtn.setAttribute('aria-label', t('prestige', { L: P }) + (pg.gte(1) ? ' (+' + fmt(pg) + ')' : ''));
     }
 
     const canAutoBuy = game.hasKind('autobuy:' + L);
@@ -438,7 +441,7 @@
       html += '<h3>' + t('stLayer', { L }) + '</h3>' + rows([
         [t('stResets'), fmt(lay.resets)],
         [t('stTotal', { L }), fmtAmt(lay.total)],
-        [t('stBest'), st.bestGain[L] ? '+' + fmt(st.bestGain[L]) + ' ' + L : '–'],
+        [t('stBest'), st.bestGain[L].gt(0) ? '+' + fmt(st.bestGain[L]) + ' ' + L : '–'],
         [t('stFastest'), fmtTime(st.fastest[L])],
         [t('stFirst'), fmtTime(st.firstReset[L])],
         [t('stSince'), lay.resets ? fmtTime(game.timeSince(L)) : '–'],
@@ -488,8 +491,8 @@
     if (!gain || seconds < minShow) return;
     $('welcomeText').textContent = t('awayFor', { t: fmtTime(seconds) });
     const items = [];
-    if (gain.points > 0) items.push('+' + fmt(gain.points) + ' ' + t('pointsLower'));
-    game.LAYER_KEYS.forEach(L => { if (gain[L] >= 0.5) items.push('+' + fmtAmt(gain[L]) + ' ' + L); });
+    if (gain.points.gt(0)) items.push('+' + fmt(gain.points) + ' ' + t('pointsLower'));
+    game.LAYER_KEYS.forEach(L => { if (gain[L].gte(0.5)) items.push('+' + fmtAmt(gain[L]) + ' ' + L); });
     $('welcomeGains').innerHTML = '';
     (items.length ? items : [t('offlineNone')]).forEach(x => { const li = document.createElement('li'); li.textContent = x; $('welcomeGains').appendChild(li); });
     $('welcomeCap').hidden = seconds <= AP.OFFLINE_MAX;
@@ -523,7 +526,7 @@
       AP.LETTERS.slice(0, AP.LETTERS.indexOf(L) + 1).split('').forEach(x => { if (game.LAYERS[x] && !s.unlocked.includes(x)) s.unlocked.push(x); });
       render();
     },
-    add(L, n) { if (L === 'P') game.state.points += n; else game.state.layers[L].amt += n; render(); }
+    add(L, n) { if (L === 'P') game.state.points = game.state.points.add(n); else game.state.layers[L].amt = game.state.layers[L].amt.add(n); render(); }
   };
 
   applyLang();

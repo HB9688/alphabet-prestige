@@ -10,13 +10,18 @@
 <h1>Alphabet Prestige – Balance-Tuner</h1>
 <p>Sucht Kosten und Reset-Anforderungen so, dass jeder Kauf zum Zielzeitpunkt erreicht wird. Ergebnis in upgrades.js / game.js übernehmen.</p>
 <pre id="out">läuft …</pre>
+<script src="../js/lib/break_infinity.min.js"></script>
 <script src="../js/palette.js"></script>
 <script src="../js/upgrades.js"></script>
 <script src="../js/game.js"></script>
 <script src="simcore.js"></script>
 <script>
 const out = document.getElementById('out');
-const round2 = v => { if (v <= 0) return v; const e = Math.floor(Math.log10(v)); const m = Math.round(v / Math.pow(10, e - 1)); return m * Math.pow(10, e - 1); };
+// Werte als Zehnerpotenz (Logarithmus) suchen, damit auch Kosten weit über 1e308 möglich sind
+const Dec = AP.Decimal, LOCK = new Dec('1e1000000');
+const fromLog = l => Dec.pow(10, l);
+// auf 2 gültige Stellen runden, z. B. 10^4.37 → 2.3e4
+const round2 = l => { const e = Math.floor(l); let m = Math.round(Math.pow(10, l - e + 1)); return new Dec(m + 'e' + (e - 1)); };
 
 // Schritte in zeitlicher Reihenfolge
 const steps = [];
@@ -29,8 +34,8 @@ steps.push({ key: 'reset:C', kind: 'req', layer: 'C', interval: 150 });
 AP.UPGRADE_ORDER.C.forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: intC(i) }));
 
 // alles noch nicht getunte sperren
-steps.forEach(st => { if (st.kind === 'cost') AP.UPGRADES[st.id].cost = Infinity; else AP.LAYERS[st.layer].req = Infinity; });
-const setP = (st, v) => { if (st.kind === 'cost') AP.UPGRADES[st.id].cost = v; else AP.LAYERS[st.layer].req = v; };
+steps.forEach(st => { if (st.kind === 'cost') AP.UPGRADES[st.id].cost = LOCK; else AP.LAYERS[st.layer].req = LOCK; });
+const setP = (st, v) => { v = new Dec(v); if (st.kind === 'cost') AP.UPGRADES[st.id].cost = v; else AP.LAYERS[st.layer].req = v; };
 
 let prevT = tuneA ? AP.simulate({ stopAt: 'AB', dt: 1 }).bought.AB : AP.simulate({ stopAt: 'AZ', dt: 1 }).bought.AZ;
 let prevLog = 0;
@@ -49,23 +54,24 @@ function stepOnce() {
   let lo = st.kind === 'cost' ? Math.max(0, prevLog) : 0, hi = lo + (st.kind === 'cost' ? 12 : 40);
   for (let it = 0; it < 18; it++) {
     const mid = (lo + hi) / 2;
-    if (timeFor(Math.pow(10, mid)) < target) lo = mid; else hi = mid;
+    if (timeFor(fromLog(mid)) < target) lo = mid; else hi = mid;
   }
-  let v = round2(Math.pow(10, lo));
-  if (st.kind === 'cost' && v < 1) v = 1;
+  let v = round2(lo);
+  if (st.kind === 'cost' && v.lt(1)) v = new Dec(1);
   const t = timeFor(v);
-  if (st.kind === 'cost') prevLog = Math.log10(Math.max(v, 1));
+  if (st.kind === 'cost') prevLog = Dec.max(v, 1).log10();
   if (st.key === 'reset:B' || st.key === 'reset:C') prevLog = 0;
   results.push({ key: st.key, v, t, target });
-  out.textContent = results.map(r => r.key.padEnd(8) + String(r.v).padEnd(10) + AP.fmtT(r.t) + '  (Ziel ' + AP.fmtT(r.target) + ')').join('\n');
+  out.textContent = results.map(r => r.key.padEnd(8) + String(r.v).padEnd(12) + AP.fmtT(r.t) + '  (Ziel ' + AP.fmtT(r.target) + ')').join('\n');
   prevT = isFinite(t) ? t : target;
   k++;
   setTimeout(stepOnce, 0);
 }
 function finish() {
-  const costs = { A: AP.UPGRADE_ORDER.A.map(id => AP.UPGRADES[id].cost), B: AP.UPGRADE_ORDER.B.map(id => AP.UPGRADES[id].cost), C: AP.UPGRADE_ORDER.C.map(id => AP.UPGRADES[id].cost) };
-  const fmt = a => '[' + a.map(v => v >= 1e4 ? v.toExponential().replace('e+', 'e') : String(v)).join(', ') + ']';
-  window.tuneResult = 'A: ' + fmt(costs.A) + ',\nB: ' + fmt(costs.B) + ',\nC: ' + fmt(costs.C) + '\nreqB: ' + AP.LAYERS.B.req + '  reqC: ' + AP.LAYERS.C.req;
+  // Ausgabe passend für COSTS in upgrades.js: kleine Werte als Zahl, große als Text ('1.2e400')
+  const one = v => v.lt(1e4) ? String(v.toNumber()) : v.gte('1e300') ? "'" + v.toString().replace('e+', 'e') + "'" : v.toString().replace('e+', 'e');
+  const fmt = L => L + ': [' + AP.UPGRADE_ORDER[L].map(id => one(AP.UPGRADES[id].cost)).join(', ') + ']';
+  window.tuneResult = Object.keys(AP.UPGRADE_ORDER).map(fmt).join(',\n') + '\n' + Object.keys(AP.LAYERS).filter(L => AP.LAYERS[L].source).map(L => 'req' + L + ': ' + AP.LAYERS[L].req.toString()).join('  ');
   out.textContent += '\n\nFERTIG\n' + window.tuneResult;
 }
 setTimeout(stepOnce, 0);

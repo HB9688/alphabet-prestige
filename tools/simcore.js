@@ -28,8 +28,9 @@
         if (s.time - lastManual[L] < 2) continue;
         const gain = g.gain(L), amt = g.amt(L);
         const next = g.nextId(L);
-        const cost = next ? AP.UPGRADES[next].cost : Infinity;
-        if (gain >= Math.max(1, amt) || (amt < cost && amt + gain >= cost)) {
+        const cost = next ? AP.UPGRADES[next].cost : null;
+        // Werte sind Decimal: Verdopplung oder nächstes Upgrade wird durch den Reset bezahlbar
+        if (gain.gte(AP.Decimal.max(1, amt)) || (cost && amt.lt(cost) && amt.add(gain).gte(cost))) {
           g.reset(L);
           lastManual[L] = s.time;
           if (!(L in firstReset)) { firstReset[L] = s.time; note('reset:' + L, 'erster ' + L + '-Reset (+' + gain + ')'); }

@@ -1,23 +1,29 @@
 // © 2026 HB9688 – All rights reserved. See LICENSE.
 // Spiellogik: State, Formeln, Kauf, Reset, Automatisierung, Speichern.
+// Große Werte (Punkte, Stufenpunkte, Gewinne, Kosten, Effekte) sind Decimal (break_infinity.js, js/lib/).
+// WICHTIG: Decimal nie mit <, >, +, -, *, / verrechnen – immer .lt/.gte/.add/.mul … bzw. AP.D() benutzen.
 (function (AP) {
   const SAVE_KEY = 'alphabetPrestige.save.v1';
   const LAYER_KEYS = ['A', 'B', 'C'];
+  const Decimal = globalThis.Decimal;
+  const D = x => (x instanceof Decimal ? x : new Decimal(x === null || x === undefined ? 0 : x));
+  const ZERO = D(0), ONE = D(1);
 
   // Reset-Gewinn: floor((Quelle / req) ^ exp × Multiplikatoren)
   const LAYERS = {
-    A: { source: null, req: 10, exp: 0.5 },
-    B: { source: 'A', req: 5.1e15, exp: 0.25 },
-    C: { source: 'B', req: 1.5e9, exp: 0.25 }
+    A: { source: null, req: D(10), exp: 0.5 },
+    B: { source: 'A', req: D(5.1e15), exp: 0.25 },
+    C: { source: 'B', req: D(1.5e9), exp: 0.25 }
   };
 
   function defaultState() {
     const layers = {};
-    LAYER_KEYS.forEach(L => { layers[L] = { amt: 0, up: {}, total: 0, resets: 0, lastReset: 0 }; });
+    LAYER_KEYS.forEach(L => { layers[L] = { amt: ZERO, up: {}, total: ZERO, resets: 0, lastReset: 0 }; });
+    const perLayer = v => Object.fromEntries(LAYER_KEYS.map(L => [L, v]));
     return {
       version: 1,
       time: 0,
-      points: 0,
+      points: ZERO,
       layers,
       unlocked: ['A'],
       teaseD: false,
@@ -26,17 +32,17 @@
       paused: false, // Pause: keine Zeit, keine Erzeugung, keine Käufe/Resets
       lastSeen: null, // Zeitstempel (ms) des letzten Speicherns – für Offline-Fortschritt
       // höchster Upgrade-Index je Stufe, der schon einmal aufgedeckt war (bleibt nach Resets sichtbar)
-      revealed: { A: 2, B: 2, C: 2 },
+      revealed: perLayer(2),
       auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 },
       // Statistik. since = Spielzeit, ab der gezählt wird (bei alten Spielständen > 0)
       stats: {
         since: null,
-        pointsTotal: 0,
-        pointsMax: 0,
+        pointsTotal: ZERO,
+        pointsMax: ZERO,
         buys: 0,
-        bestGain: { A: 0, B: 0, C: 0 },
-        fastest: { A: null, B: null, C: null },
-        firstReset: { A: null, B: null, C: null }
+        bestGain: perLayer(ZERO),
+        fastest: perLayer(null),
+        firstReset: perLayer(null)
       }
     };
   }
@@ -46,7 +52,8 @@
     for (const k of Object.keys(base)) {
       if (!(k in saved)) continue;
       const b = base[k], s = saved[k];
-      if (b && typeof b === 'object' && !Array.isArray(b) && k !== 'up') base[k] = merge(b, s);
+      if (b instanceof Decimal) base[k] = D(s); // gespeichert als Zahl (alt) oder Text (neu)
+      else if (b && typeof b === 'object' && !Array.isArray(b) && k !== 'up') base[k] = merge(b, s);
       else base[k] = s;
     }
     return base;
@@ -71,12 +78,19 @@
       state: s,
       LAYERS,
       LAYER_KEYS,
-      get points() { return s.points; },
-      amt: L => s.layers[L].amt,
+      get points() { return D(s.points); },
+      amt: L => D(s.layers[L].amt),
       has: id => !!s.layers[id[0]].up[id],
       count: L => Object.keys(s.layers[L].up).length,
       timeSince: L => s.time - s.layers[L].lastReset,
       isUnlocked: L => s.unlocked.includes(L),
+
+      // Sicherheitsnetz: Werte, die von außen (Konsole, alte Tools) als normale Zahl gesetzt wurden, in Decimal wandeln
+      normalize() {
+        s.points = D(s.points);
+        LAYER_KEYS.forEach(L => { const l = s.layers[L]; l.amt = D(l.amt); l.total = D(l.total); s.stats.bestGain[L] = D(s.stats.bestGain[L]); });
+        s.stats.pointsTotal = D(s.stats.pointsTotal); s.stats.pointsMax = D(s.stats.pointsMax);
+      },
 
       _cache: null,
       invalidate() { game._cache = null; },
@@ -88,14 +102,14 @@
         return out;
       },
 
-      // Effekt eines Upgrades inkl. aller Modifikatoren anderer gekaufter Upgrades.
+      // Effekt eines Upgrades (Decimal) inkl. aller Modifikatoren anderer gekaufter Upgrades.
       effect(id) {
         const u = UP[id];
         if (!u.effect) return null;
-        let v = u.effect(game);
+        let v = D(u.effect(game));
         for (const m of game.bought()) {
           if (m.kind !== 'mod' || m.target !== id) continue;
-          v = m.op === 'pow' ? Math.pow(v, m.value) : v * m.value;
+          v = m.op === 'pow' ? v.pow(m.value) : v.mul(m.value);
         }
         return v;
       },
@@ -103,44 +117,44 @@
       modsOf(id) { return game.bought().filter(m => m.kind === 'mod' && m.target === id); },
 
       product(kind) {
-        let p = 1;
-        for (const u of game.bought()) if (u.kind === kind) p *= game.effect(u.id);
+        let p = ONE;
+        for (const u of game.bought()) if (u.kind === kind) p = p.mul(game.effect(u.id));
         return p;
       },
 
+      // größter Effekt einer Art als normale Zahl (für kleine Werte: passive Anteile, keep-Anzahl)
       maxOf(kind) {
         let m = 0;
-        for (const u of game.bought()) if (u.kind === kind) m = Math.max(m, game.effect(u.id));
+        for (const u of game.bought()) if (u.kind === kind) m = Math.max(m, game.effect(u.id).toNumber());
         return m;
       },
 
       hasKind(kind) { return game.bought().some(u => u.kind === kind); },
 
       pointRate() {
-        let base = 0;
-        for (const u of game.bought()) if (u.kind === 'base') base += game.effect(u.id);
-        if (base <= 0) return 0;
-        return Math.pow(base * game.product('points'), game.product('pow'));
+        let base = ZERO;
+        for (const u of game.bought()) if (u.kind === 'base') base = base.add(game.effect(u.id));
+        if (base.lte(0)) return ZERO;
+        return base.mul(game.product('points')).pow(game.product('pow').toNumber());
       },
 
-      sourceAmt(L) { return LAYERS[L].source ? s.layers[LAYERS[L].source].amt : s.points; },
-      sourceName(L) { return LAYERS[L].source ? LAYERS[L].source + '-Punkte' : 'Punkte'; },
+      sourceAmt(L) { return LAYERS[L].source ? game.amt(LAYERS[L].source) : game.points; },
 
       rawGain(L) {
         const cfg = LAYERS[L];
         const src = game.sourceAmt(L);
-        if (src < cfg.req) return 0;
-        return Math.pow(src / cfg.req, cfg.exp) * game.product('gain:' + L);
+        if (src.lt(cfg.req)) return ZERO;
+        return src.div(cfg.req).pow(cfg.exp).mul(game.product('gain:' + L));
       },
-      gain(L) { return Math.floor(game.rawGain(L)); },
+      gain(L) { return game.rawGain(L).floor(); },
       // Anzeige-Ziele für den Reset-Gewinn: unter 100 jeder ganze Punkt, danach feste Stufen 100, 200, 500, 1000 …
       // Liefert [letzte erreichte Stufe, nächste Stufe]; die nächste bleibt stehen, bis sie erreicht ist.
       gainSteps(L) {
         const g = game.gain(L);
-        if (g < 100) return [g, g + 1];
-        const p = Math.pow(10, Math.floor(Math.log10(g)));
-        const steps = [1, 2, 5, 10].map(m => m * p);
-        const i = steps.findIndex(v => v > g);
+        if (g.lt(100)) return [g, g.add(1)];
+        const p = Decimal.pow(10, Math.floor(g.log10()));
+        const steps = [1, 2, 5, 10].map(m => p.mul(m));
+        const i = steps.findIndex(v => v.gt(g));
         return [steps[i - 1], steps[i]];
       },
       nextTarget(L) { return game.gainSteps(L)[1]; },
@@ -149,16 +163,16 @@
         const cfg = LAYERS[L];
         if (target === undefined) target = game.nextTarget(L);
         // unter req gibt es nie Gewinn, auch wenn Multiplikatoren rechnerisch weniger bräuchten
-        return Math.max(cfg.req, cfg.req * Math.pow(target / game.product('gain:' + L), 1 / cfg.exp));
+        return Decimal.max(cfg.req, cfg.req.mul(D(target).div(game.product('gain:' + L)).pow(1 / cfg.exp)));
       },
 
       // Fortschritt 0..1 bis zur Mindestmenge bzw. von der letzten bis zur nächsten Gewinn-Stufe
       progress(L) {
         const cfg = LAYERS[L];
         const src = game.sourceAmt(L);
-        if (src < cfg.req) return src / cfg.req;
+        if (src.lt(cfg.req)) return src.div(cfg.req).toNumber();
         const [from, to] = game.gainSteps(L);
-        return (game.rawGain(L) - from) / (to - from);
+        return game.rawGain(L).sub(from).div(to.sub(from)).toNumber();
       },
 
       nextId(L) {
@@ -169,13 +183,13 @@
 
       canBuy(id) {
         const u = UP[id];
-        return !s.paused && game.isUnlocked(u.layer) && game.nextId(u.layer) === id && s.layers[u.layer].amt >= u.cost;
+        return !s.paused && game.isUnlocked(u.layer) && game.nextId(u.layer) === id && game.amt(u.layer).gte(u.cost);
       },
 
       buy(id) {
         if (!game.canBuy(id)) return false;
         const u = UP[id];
-        s.layers[u.layer].amt -= u.cost;
+        s.layers[u.layer].amt = game.amt(u.layer).sub(u.cost);
         s.layers[u.layer].up[id] = true;
         s.stats.buys++;
         s.revealed[u.layer] = Math.max(s.revealed[u.layer], u.index + 3);
@@ -195,27 +209,27 @@
         return n;
       },
 
-      canReset(L) { return !s.paused && game.isUnlocked(L) && game.gain(L) >= 1; },
+      canReset(L) { return !s.paused && game.isUnlocked(L) && game.gain(L).gte(1); },
 
       reset(L) {
         const g = game.gain(L);
         if (!game.canReset(L)) return false;
         const lay = s.layers[L];
         const st = s.stats, dur = s.time - lay.lastReset;
-        st.bestGain[L] = Math.max(st.bestGain[L], g);
+        st.bestGain[L] = Decimal.max(st.bestGain[L], g);
         if (st.fastest[L] === null || dur < st.fastest[L]) st.fastest[L] = dur;
         if (st.firstReset[L] === null) st.firstReset[L] = s.time;
-        lay.amt += g;
-        lay.total += g;
+        lay.amt = lay.amt.add(g);
+        lay.total = lay.total.add(g);
         lay.resets++;
         lay.lastReset = s.time;
-        s.points = 0;
+        s.points = ZERO;
         // niedrigere Stufen von oben nach unten zurücksetzen
         const idx = LAYER_KEYS.indexOf(L);
         for (let i = idx - 1; i >= 0; i--) {
           const M = LAYER_KEYS[i];
           const lm = s.layers[M];
-          lm.amt = 0;
+          lm.amt = ZERO;
           lm.lastReset = s.time;
           const keep = game.maxOf('keep:' + M);
           const kept = {};
@@ -228,45 +242,47 @@
       },
 
       tick(dt) {
+        game.normalize();
         if (s.paused) return;
         s.time += dt;
-        const produced = game.pointRate() * dt;
-        s.points += produced;
-        s.stats.pointsTotal += produced;
-        if (s.points > s.stats.pointsMax) s.stats.pointsMax = s.points;
+        const produced = game.pointRate().mul(dt);
+        s.points = s.points.add(produced);
+        s.stats.pointsTotal = s.stats.pointsTotal.add(produced);
+        if (s.points.gt(s.stats.pointsMax)) s.stats.pointsMax = s.points;
         for (const L of ['A', 'B']) {
           if (!game.isUnlocked(L)) continue;
           const frac = game.maxOf('passive:' + L);
           if (frac > 0) {
-            const g = game.rawGain(L) * frac * dt;
-            s.layers[L].amt += g;
-            s.layers[L].total += g;
+            const g = game.rawGain(L).mul(frac * dt);
+            s.layers[L].amt = s.layers[L].amt.add(g);
+            s.layers[L].total = s.layers[L].total.add(g);
           }
         }
         for (const L of ['B', 'A']) {
           if (game.hasKind('autoreset:' + L) && s.auto['reset' + L]) {
-            const need = Math.max(1, s.layers[L].amt * s.auto['reset' + L + 'Factor']);
-            if (game.gain(L) >= need && game.timeSince(L) >= 0.5) game.reset(L);
+            const need = Decimal.max(1, s.layers[L].amt.mul(s.auto['reset' + L + 'Factor']));
+            if (game.gain(L).gte(need) && game.timeSince(L) >= 0.5) game.reset(L);
           }
           if (game.hasKind('autobuy:' + L) && s.auto['buy' + L]) game.buyAll(L);
         }
       },
 
       // Offline-Fortschritt: verpasste Zeit in höchstens ~5000 Schritten nachrechnen (passive Erzeugung,
-      // Auto-Kauf; keine Resets). Liefert den Zuwachs für die Willkommen-zurück-Anzeige.
+      // Auto-Kauf; keine Resets). Liefert den Zuwachs (Decimal) für die Willkommen-zurück-Anzeige.
       catchUp(seconds) {
         if (s.paused || !(seconds > 0)) return null;
         const before = { points: s.points };
         LAYER_KEYS.forEach(L => { before[L] = s.layers[L].amt; });
         const steps = Math.min(5000, Math.ceil(seconds / 0.5)), step = seconds / steps;
         for (let i = 0; i < steps; i++) game.tick(step);
-        const gain = { points: s.points - before.points };
-        LAYER_KEYS.forEach(L => { gain[L] = s.layers[L].amt - before[L]; });
+        const gain = { points: s.points.sub(before.points) };
+        LAYER_KEYS.forEach(L => { gain[L] = s.layers[L].amt.sub(before[L]); });
         return gain;
       },
 
       save() {
         s.lastSeen = Date.now();
+        // Decimal wird per toJSON als Text gespeichert ("1.23e+456") und beim Laden in merge() zurückverwandelt
         try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); return true; } catch (e) { return false; }
       },
       exportSave() { return btoa(unescape(encodeURIComponent(JSON.stringify(s)))); }
@@ -274,6 +290,8 @@
     return game;
   }
 
+  AP.Decimal = Decimal;
+  AP.D = D;
   AP.createGame = createGame;
   AP.LAYERS = LAYERS;
   AP.OFFLINE_MAX = 8 * 3600; // höchstens 8 h Abwesenheit werden angerechnet

@@ -13,6 +13,10 @@ design, in whole or in part, including as part of another game or website.
 Forking this repository through GitHub's fork feature is permitted only to the
 extent required by the GitHub Terms of Service; it grants no further rights.
 
+Third-party component: js/lib/break_infinity.min.js (break_infinity.js,
+Copyright (c) 2019 Timothy Stiles) is licensed under the MIT License, see the
+license header in that file. It is not covered by the copyright notice above.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 
 ---
@@ -22,3 +26,4 @@ ist öffentlich einsehbar, aber nicht Open Source. Ansehen des Quellcodes und
 Spielen über die offizielle Seite sind erlaubt. Kopieren, Verändern,
 Weiterverbreiten, Verkaufen oder Veröffentlichen – ganz oder in Teilen – ist
 ohne vorherige schriftliche Erlaubnis des Rechteinhabers nicht gestattet.
+Ausnahme: js/lib/break_infinity.min.js ist eine Fremdbibliothek unter MIT-Lizenz.
