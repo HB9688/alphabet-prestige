@@ -87,8 +87,11 @@
       s.revealed[L] = Math.max(s.revealed[L], all ? 25 : Object.keys(s.layers[L].up).length + 2);
     });
 
+    // onEvent(type, data): optionaler Beobachter für Käufe und Resets (Testprotokoll in ui.js); autoBuying markiert Auto-Käufe
+    let autoBuying = false;
     const game = {
       state: s,
+      onEvent: null,
       LAYERS,
       LAYER_KEYS,
       get points() { return D(s.points); },
@@ -207,6 +210,7 @@
         s.layers[u.layer].amt = game.amt(u.layer).sub(u.cost);
         s.layers[u.layer].up[id] = true;
         s.stats.buys++;
+        if (game.onEvent) game.onEvent('buy', { id, auto: autoBuying });
         s.revealed[u.layer] = Math.max(s.revealed[u.layer], u.index + 3);
         game.invalidate();
         if (u.kind.startsWith('unlock:')) {
@@ -230,6 +234,7 @@
         const g = game.gain(L);
         if (!game.canReset(L)) return false;
         const lay = s.layers[L];
+        if (game.onEvent) game.onEvent('reset', { L, gain: g, had: game.amt(L), src: game.sourceAmt(L) });
         const st = s.stats, dur = s.time - lay.lastReset;
         st.bestGain[L] = Decimal.max(st.bestGain[L], g);
         if (st.fastest[L] === null || dur < st.fastest[L]) st.fastest[L] = dur;
@@ -279,7 +284,7 @@
             const need = Decimal.max(1, s.layers[L].amt.mul(s.auto['reset' + L + 'Factor']));
             if (game.gain(L).gte(need) && game.timeSince(L) >= 0.5) game.reset(L);
           }
-          if (game.hasKind('autobuy:' + L) && s.auto['buy' + L]) game.buyAll(L);
+          if (game.hasKind('autobuy:' + L) && s.auto['buy' + L]) { autoBuying = true; game.buyAll(L); autoBuying = false; }
         }
       },
 

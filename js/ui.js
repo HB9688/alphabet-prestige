@@ -423,6 +423,7 @@
   }
   function togglePause() {
     game.state.paused = !game.state.paused;
+    logEv('p', T(), game.state.paused ? 1 : 0);
     applyPause();
     game.save();
     render();
@@ -500,6 +501,7 @@
     if (!text) return;
     try {
       game = AP.createGame(AP.decodeSave(text));
+      hookLog(game);
       game.save();
       AP.lang = game.state.lang === 'de' ? 'de' : 'en'; // Englisch = Primärsprache
       applyLang();
@@ -510,12 +512,96 @@
     if (!confirm(t('confirmReset'))) return;
     skipSave = true;
     AP.clearSave();
+    try { localStorage.removeItem(LOG_KEY); } catch (e) { /* ignorieren */ }
     location.reload();
   });
   window.addEventListener('beforeunload', () => { if (!skipSave) game.save(); });
   // Handy: beim Wegwechseln speichern (beforeunload kommt dort oft nicht) – hält auch lastSeen aktuell
   document.addEventListener('visibilitychange', () => { if (document.hidden && !skipSave) game.save(); });
   window.addEventListener('pagehide', () => { if (!skipSave) game.save(); });
+
+  // ---------- Testprotokoll (nur Testadressen, wie debug) ----------
+  // Zeichnet Resets, Käufe, Pausen, Fensterwechsel und alle 15 s einen Zwischenstand auf, damit sich der echte
+  // Spielstil auswerten lässt (Balance). Liegt getrennt vom Spielstand in localStorage, Export als JSON-Datei.
+  // Offline-Fortschritt ist hier standardmäßig aus (Häkchen im Zahnrad-Menü), damit das Bild sauber bleibt.
+  const TEST_HOSTS = ['localhost', '127.0.0.1', 'raw.githack.com'];
+  const IS_TEST = location.protocol === 'file:' || TEST_HOSTS.includes(location.hostname);
+  const LOG_KEY = 'alphabetPrestige.log.v1', TEST_KEY = 'alphabetPrestige.test.v1';
+  const testCfg = (() => { try { return Object.assign({ offline: false }, JSON.parse(localStorage.getItem(TEST_KEY) || '{}')); } catch (e) { return { offline: false }; } })();
+  const offlineAllowed = () => !IS_TEST || testCfg.offline;
+  const newLog = () => ({
+    format: 'alphabet-prestige-log', v: 1, created: new Date().toISOString(),
+    legend: {
+      open: '[t, Datum, s seit letztem Speichern, Breite, Touch]',
+      r: '[t, Stufe, Gewinn, Bestand vorher, Quelle]',
+      b: '[t, Upgrade, m=manuell|a=Auto-Kauf (Auto-Käufe nur beim ersten Mal)]',
+      s: '[t, Wanduhr s seit Protokollstart, Punkte, Bestände A.., gekaufte Upgrades je Stufe]',
+      h: '[t, 1=Fenster versteckt|0=sichtbar]', p: '[t, 1=Pause|0=weiter]',
+      gap: '[t, Lücke s, angerechnet s]', away: '[t, weg s, angerechnet s]'
+    },
+    ev: [], seen: {}
+  });
+  let tlog = null;
+  if (IS_TEST) {
+    try { tlog = JSON.parse(localStorage.getItem(LOG_KEY) || 'null'); } catch (e) { tlog = null; }
+    if (!tlog || tlog.format !== 'alphabet-prestige-log') tlog = newLog();
+  }
+  const T = () => Math.round(game.state.time * 10) / 10;
+  const num = d => AP.D(d).toExponential(3);
+  function logEv(...a) { if (tlog) tlog.ev.push(a); }
+  function logSave() { if (!tlog || skipSave) return; try { localStorage.setItem(LOG_KEY, JSON.stringify(tlog)); } catch (e) { /* voll: ignorieren */ } }
+  let lastSnap = -1e9, logStart = tlog ? Date.parse(tlog.created) : 0;
+  function logSnap(force) {
+    if (!tlog || (!force && game.state.time - lastSnap < 15)) return;
+    lastSnap = game.state.time;
+    const st = game.state;
+    logEv('s', T(), Math.round((Date.now() - logStart) / 1000), num(st.points),
+      game.LAYER_KEYS.map(L => num(st.layers[L].amt)), game.LAYER_KEYS.map(L => game.count(L)));
+  }
+  function hookLog(g) {
+    if (!tlog) return;
+    g.onEvent = (type, d) => {
+      if (type === 'reset') logEv('r', T(), d.L, num(d.gain), num(d.had), num(d.src));
+      else if (type === 'buy') {
+        if (d.auto && tlog.seen[d.id]) return;
+        tlog.seen[d.id] = 1;
+        logEv('b', T(), d.id, d.auto ? 'a' : 'm');
+      }
+    };
+  }
+  hookLog(game);
+  if (IS_TEST) {
+    $('testCard').hidden = false;
+    $('offlineChk').checked = testCfg.offline;
+    $('offlineChk').addEventListener('change', () => {
+      testCfg.offline = $('offlineChk').checked;
+      try { localStorage.setItem(TEST_KEY, JSON.stringify(testCfg)); } catch (e) { /* ignorieren */ }
+    });
+    $('logExportBtn').addEventListener('click', () => {
+      logSnap(true); logSave();
+      const out = Object.assign({ game: AP.VERSION, exported: new Date().toISOString(), lang: AP.lang, offline: testCfg.offline }, tlog);
+      delete out.seen;
+      const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+      const a = document.createElement('a');
+      const d = new Date(), pad = x => String(x).padStart(2, '0');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'alphabet-prestige-log-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes()) + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    });
+    $('logClearBtn').addEventListener('click', () => {
+      if (!confirm(t('confirmLogClear'))) return;
+      tlog = newLog(); logStart = Date.parse(tlog.created); lastSnap = -1e9;
+      hookLog(game); logSnap(true); logSave();
+    });
+    document.addEventListener('visibilitychange', () => { logEv('h', T(), document.hidden ? 1 : 0); if (document.hidden) logSave(); });
+    window.addEventListener('pagehide', logSave);
+  }
+  function renderLogInfo() {
+    if (!tlog || $('settingsMenu').hidden) return;
+    const d = new Date(tlog.created);
+    $('logInfo').textContent = t('logInfo', { n: tlog.ev.length, d: d.toLocaleDateString(AP.lang) + ' ' + d.toLocaleTimeString(AP.lang, { hour: '2-digit', minute: '2-digit' }) });
+  }
 
   // ---------- Offline-Fortschritt ----------
   function closeWelcome() { $('welcomeOverlay').hidden = true; }
@@ -524,8 +610,10 @@
   // Verpasste Zeit nachrechnen; ab minShow Sekunden das Fenster „Willkommen zurück“ zeigen
   function applyAway(seconds, minShow) {
     if (!(seconds > 0) || game.state.paused) return;
-    // max. 8 h Abwesenheit, angerechnet mit OFFLINE_RATE (50 %) als Spielzeit
-    const counted = Math.min(seconds, AP.OFFLINE_MAX) * AP.OFFLINE_RATE;
+    // max. 8 h Abwesenheit, angerechnet mit OFFLINE_RATE (50 %) als Spielzeit; im Testprotokoll abschaltbar
+    const counted = offlineAllowed() ? Math.min(seconds, AP.OFFLINE_MAX) * AP.OFFLINE_RATE : 0;
+    logEv('away', T(), Math.round(seconds), Math.round(counted));
+    if (!counted) return;
     const gain = game.catchUp(counted);
     if (!gain || seconds < minShow) return;
     $('welcomeText').textContent = t('awayFor', { t: fmtTime(seconds), g: fmtTime(counted) });
@@ -550,9 +638,12 @@
     last = now;
     saveTimer += dt;
     // lange Lücke (> 5 min, z. B. gesperrtes Handy): wie Offline-Fortschritt nachrechnen (50 % Tempo) mit Fenster
+    if (dt > 5) logEv('gap', T(), Math.round(dt), dt > 300 ? '–' : Math.round(dt));
     if (dt > 300) applyAway(dt, 300); // Hintergrund-Tab (Browser drosselt auf ~1 Schritt/min) läuft bis 5 min voll weiter
     else while (dt > 0) { const step = Math.min(dt, 0.5); game.tick(step); dt -= step; }
-    if (saveTimer >= 10) { saveTimer = 0; showSaved(game.save()); }
+    if (saveTimer >= 10) { saveTimer = 0; showSaved(game.save()); logSave(); }
+    logSnap();
+    renderLogInfo();
     render();
     renderStats();
   }, 50);
@@ -560,8 +651,6 @@
   // ---------- Debug (Konsole) ----------
   // Nur zum Testen: lokale Datei, localhost, Vorschau-Link raw.githack.com.
   // Überall sonst (GitHub Pages, galaxy.click, itch.io …, eingebettet oder hochgeladen) gibt es kein window.debug.
-  const TEST_HOSTS = ['localhost', '127.0.0.1', 'raw.githack.com'];
-  const IS_TEST = location.protocol === 'file:' || TEST_HOSTS.includes(location.hostname);
   if (IS_TEST) window.debug = {
     get game() { return game; },
     unlock(L) {
@@ -575,5 +664,7 @@
   applyLang();
   switchTab(game.state.unlocked.includes(game.state.tab) ? game.state.tab : 'A');
   // Beim Öffnen: Zeit seit dem letzten Speichern anrechnen (Fenster ab 1 min Abwesenheit)
+  logEv('open', T(), new Date().toISOString(), game.state.lastSeen ? Math.round((Date.now() - game.state.lastSeen) / 1000) : null, innerWidth, 'ontouchstart' in window ? 1 : 0);
   if (game.state.lastSeen) applyAway((Date.now() - game.state.lastSeen) / 1000, 60);
+  logSnap(true);
 })(globalThis.AP = globalThis.AP || {});

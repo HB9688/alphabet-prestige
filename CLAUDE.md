@@ -93,5 +93,6 @@ A und B trifft das Modell gut; **in C/D ist der echte Spieler noch ~1,5–2× sc
 
 - **`debug` gibt es nur auf Testadressen** (file://, localhost, raw.githack.com – Liste `TEST_HOSTS` in `ui.js`); auf GitHub Pages und jeder Spieleplattform (eingebettet oder hochgeladen) ist es aus. Neue Testadresse? In `TEST_HOSTS` eintragen.
 - Im Browser öffnen; in der Konsole: `debug.unlock('C')`, `debug.add('A', 1e6)` oder `debug.add('A', '1e500')` (`'P'` für Punkte), `debug.game` für den State (Werte sind Decimal: `debug.game.state.points.toString()`).
+- **Testprotokoll** (nur Testadressen, Feld „Test log“ im Zahnrad-Menü): zeichnet Resets (Gewinn, Bestand, Quelle), manuelle Käufe (Auto-Käufe nur beim ersten Mal), Pausen, Fensterwechsel, Lücken und alle 15 s einen Zwischenstand auf; liegt getrennt vom Spielstand unter `alphabetPrestige.log.v1`, „Export log“ lädt eine JSON-Datei herunter, „Neu starten“ löscht es mit. **Offline-Fortschritt ist auf Testadressen standardmäßig aus** (Häkchen „Offline progress“, gespeichert unter `alphabetPrestige.test.v1`) – Offline-Tests auf file:// müssen es einschalten. Der Nutzer spielt damit auf raw.githack.com; das Protokoll dient der Balance-Auswertung seines Spielstils.
 - Test-Spielstände danach mit „Neu starten“ oder `localStorage.clear()` entfernen.
 - Desktop- und Handybreite (< 760 px) prüfen.
