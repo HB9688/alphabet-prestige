@@ -120,7 +120,7 @@
     { name: 'Zehnfach-Echo', kind: 'mod', target: 'AO', op: 'mul', value: 10, desc: 'Effekt von AO ×10' },
     { name: 'D-Potenz', kind: 'pow', effect: () => 1.05, desc: 'Punkte/s ^1,05' },
     { name: 'C-Echo in D', kind: 'gain:D', effect: g => 1 + g.amt('C').add(1).log10() / 5, desc: 'D-Gewinn steigt mit deinen C-Punkten' },
-    { name: 'Sprudelnde C-Quelle', kind: 'mod', target: 'DH', op: 'mul', value: 10, desc: 'Effekt von DH ×10' },
+    { name: 'Sprudelnde C-Quelle', kind: 'mod', target: 'DH', op: 'mul', value: 3, desc: 'Effekt von DH ×3' },
     { name: 'D-Bonus', kind: 'points', effect: () => 1e3, desc: 'Punkte ×1000' },
     { name: 'A-Flut', kind: 'gain:A', effect: () => 1e3, desc: 'A-Gewinn ×1000' },
     { name: 'B-Flut', kind: 'gain:B', effect: () => 100, desc: 'B-Gewinn ×100' },
@@ -140,7 +140,7 @@
     A: [0, 1, 3, 6, 10, 23, 40, 100, 230, 420, 1000, 3900, 8500, 4e4, 6.6e4, 4.2e5, 2.9e6, 8.9e6, 6.1e7, 7.3e8, 2.9e9, 4.1e10, 1.7e12, 7.3e12, 2.8e14, 1.6e16],
     B: [1, 1, 1, 1, 1, 1, 1, 2, 8, 24, 57, 83, 240, 640, 720, 2400, 5800, 2.8e4, 6.3e4, 1.3e5, 7.7e5, 1.6e6, 7.1e6, 7.8e7, 1.2e9, 3.9e9],
     C: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 10, 26, 59, 70, 110, 320, 1200, 1e4, 7.5e4, 1.6e6, 9e6, 6.8e7, 4.9e9, 1.3e11],
-    D: [1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5, 5, 20, 120, 580, 1100, 2500, 1.2e4, 4.6e4, 2.9e5, 2.9e5, 1.5e6, 1e7, 7.2e7, 1.4e9, 3.2e10] // DA–DK von Hand steigend (Nutzer: nicht zu viel auf einmal), DL–DZ schrittweise getunt
+    D: [1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5, 29, 130, 760, 1100, 2400, 3900, 1.5e4, 6.6e4, 2.7e5, 6.6e5, 6.6e5, 7.8e6, 9.7e7, 1.7e9, 1.4e10] // DA–DK von Hand steigend; DL–DZ getunt auf ~4 min je Upgrade (Nutzer)
   };
 
   AP.UPGRADES = {};

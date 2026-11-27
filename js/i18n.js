@@ -186,7 +186,7 @@
       ['Tenfold Echo', 'AO effect ×10'],
       ['D Power', 'Points/s ^1.05'],
       ['C Echo in D', 'D gain increases with your C points'],
-      ['Bubbling C Spring', 'DH effect ×10'],
+      ['Bubbling C Spring', 'DH effect ×3'],
       ['D Bonus', 'Points ×1000'],
       ['A Flood', 'A gain ×1000'],
       ['B Flood', 'B gain ×100'],
