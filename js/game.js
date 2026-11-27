@@ -22,6 +22,7 @@
       teaseD: false,
       tab: 'A',
       lang: 'de',
+      paused: false, // Pause: keine Zeit, keine Erzeugung, keine Käufe/Resets
       // höchster Upgrade-Index je Stufe, der schon einmal aufgedeckt war (bleibt nach Resets sichtbar)
       revealed: { A: 2, B: 2, C: 2 },
       auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 },
@@ -166,7 +167,7 @@
 
       canBuy(id) {
         const u = UP[id];
-        return game.isUnlocked(u.layer) && game.nextId(u.layer) === id && s.layers[u.layer].amt >= u.cost;
+        return !s.paused && game.isUnlocked(u.layer) && game.nextId(u.layer) === id && s.layers[u.layer].amt >= u.cost;
       },
 
       buy(id) {
@@ -192,7 +193,7 @@
         return n;
       },
 
-      canReset(L) { return game.isUnlocked(L) && game.gain(L) >= 1; },
+      canReset(L) { return !s.paused && game.isUnlocked(L) && game.gain(L) >= 1; },
 
       reset(L) {
         const g = game.gain(L);
@@ -225,6 +226,7 @@
       },
 
       tick(dt) {
+        if (s.paused) return;
         s.time += dt;
         const produced = game.pointRate() * dt;
         s.points += produced;
