@@ -10,8 +10,8 @@
   // Neueste zuerst; nur größere Versionen, kurz gehalten.
   AP.CHANGELOG = [
     { v: '0.8.0', date: '2026-11-27',
-      en: 'New prestige layer D with 26 upgrades and a first milestone (automation for A and C, passive generation)',
-      de: 'Neue Prestigestufe D mit 26 Upgrades und erstem Meilenstein (Automatisierung für A und C, passive Erzeugung)' },
+      en: 'New prestige layer D with 26 upgrades and a first milestone',
+      de: 'Neue Prestigestufe D mit 26 Upgrades und erstem Meilenstein' },
     { v: '0.7.0', date: '2026-11-27',
       en: 'Internal: support for very large numbers (preparation for new layers)',
       de: 'Intern: Unterstützung sehr großer Zahlen (Vorbereitung für neue Stufen)' },
