@@ -4,7 +4,7 @@
 // WICHTIG: Decimal nie mit <, >, +, -, *, / verrechnen – immer .lt/.gte/.add/.mul … bzw. AP.D() benutzen.
 (function (AP) {
   const SAVE_KEY = 'alphabetPrestige.save.v1';
-  const LAYER_KEYS = ['A', 'B', 'C'];
+  const LAYER_KEYS = ['A', 'B', 'C', 'D'];
   const Decimal = globalThis.Decimal;
   const D = x => (x instanceof Decimal ? x : new Decimal(x === null || x === undefined ? 0 : x));
   const ZERO = D(0), ONE = D(1);
@@ -13,7 +13,8 @@
   const LAYERS = {
     A: { source: null, req: D(10), exp: 0.5 },
     B: { source: 'A', req: D(5.1e15), exp: 0.25 },
-    C: { source: 'B', req: D(1.5e9), exp: 0.25 }
+    C: { source: 'B', req: D(1.5e9), exp: 0.25 },
+    D: { source: 'C', req: D(1e9), exp: 0.25 } // req per tools/tune.html
   };
 
   function defaultState() {
@@ -26,14 +27,15 @@
       points: ZERO,
       layers,
       unlocked: ['A'],
-      teaseD: false,
+      teaseD: false, // veraltet (bis 0.7): CZ gekauft – wird beim Laden in tease/unlocked übernommen
+      tease: null, // Buchstabe der nächsten, noch nicht spielbaren Stufe ("folgt bald"), sobald ihr Tor gekauft ist
       tab: 'A',
       lang: 'en', // Primärsprache Englisch; Deutsch umschaltbar
       paused: false, // Pause: keine Zeit, keine Erzeugung, keine Käufe/Resets
       lastSeen: null, // Zeitstempel (ms) des letzten Speicherns – für Offline-Fortschritt
       // höchster Upgrade-Index je Stufe, der schon einmal aufgedeckt war (bleibt nach Resets sichtbar)
       revealed: perLayer(2),
-      auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 },
+      auto: Object.assign(Object.fromEntries(LAYER_KEYS.map(L => ['buy' + L, true])), { resetA: true, resetAFactor: 1, resetB: true, resetBFactor: 1 }),
       // Statistik. since = Spielzeit, ab der gezählt wird (bei alten Spielständen > 0)
       stats: {
         since: null,
@@ -67,10 +69,12 @@
       LAYER_KEYS.forEach(L => { if (s.layers[L].resets > 0) s.stats.firstReset[L] = -1; });
     }
     const UP = AP.UPGRADES;
+    // Migration bis 0.7: teaseD = CZ gekauft → Stufe D ist jetzt spielbar und wird freigeschaltet
+    if (s.teaseD) { if (!s.unlocked.includes('D')) s.unlocked.push('D'); s.teaseD = false; }
     // Aufgedeckte Upgrades nachtragen (auch für alte Spielstände): ist die Stufe darüber frei, war xZ schon gekauft
     LAYER_KEYS.forEach((L, i) => {
       const above = LAYER_KEYS[i + 1];
-      const all = above ? s.unlocked.includes(above) : s.teaseD;
+      const all = above ? s.unlocked.includes(above) : !!s.tease;
       s.revealed[L] = Math.max(s.revealed[L], all ? 25 : Object.keys(s.layers[L].up).length + 2);
     });
 
@@ -197,7 +201,7 @@
         if (u.kind.startsWith('unlock:')) {
           const next = u.kind.slice(7);
           if (LAYERS[next]) { if (!s.unlocked.includes(next)) s.unlocked.push(next); }
-          else s.teaseD = true;
+          else s.tease = next;
         }
         return true;
       },
@@ -249,7 +253,7 @@
         s.points = s.points.add(produced);
         s.stats.pointsTotal = s.stats.pointsTotal.add(produced);
         if (s.points.gt(s.stats.pointsMax)) s.stats.pointsMax = s.points;
-        for (const L of ['A', 'B']) {
+        for (const L of LAYER_KEYS) {
           if (!game.isUnlocked(L)) continue;
           const frac = game.maxOf('passive:' + L);
           if (frac > 0) {
@@ -258,7 +262,8 @@
             s.layers[L].total = s.layers[L].total.add(g);
           }
         }
-        for (const L of ['B', 'A']) {
+        for (let i = LAYER_KEYS.length - 1; i >= 0; i--) {
+          const L = LAYER_KEYS[i];
           if (game.hasKind('autoreset:' + L) && s.auto['reset' + L]) {
             const need = Decimal.max(1, s.layers[L].amt.mul(s.auto['reset' + L + 'Factor']));
             if (game.gain(L).gte(need) && game.timeSince(L) >= 0.5) game.reset(L);

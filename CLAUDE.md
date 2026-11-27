@@ -1,6 +1,6 @@
 # CLAUDE.md – Alphabet Prestige
 
-Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit je 26 Upgrades. Aktuell spielbar: **A bis C**. Der Nutzer schreibt Deutsch – antworte auf Deutsch.
+Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit je 26 Upgrades. Aktuell spielbar: **A bis D**. Der Nutzer schreibt Deutsch – antworte auf Deutsch.
 
 ## Technik – feste Regeln
 
@@ -56,8 +56,9 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 - AA ist kostenlos und erzeugt 1 Punkt/s. A-Reset ab 10 Punkten: Gewinn `floor((Quelle/req)^exp × Multiplikatoren)`.
 - Ein Reset der Stufe X setzt Punkte und alle niedrigeren Stufen (Punkte und Upgrades) zurück; `keep:`-Upgrades behalten die ersten N Upgrades.
+- **Neue Stufe hinzufügen:** Buchstabe in `LAYER_KEYS` und `LAYERS` (`game.js`), Liste + `COSTS` in `upgrades.js`, englische Texte in `AP.UPGRADE_EN`, Torschalter `xZ` der Vorstufe ohne „(folgt bald)“. Alles andere (Tabs, Statistik, Tastenkürzel, passive Erzeugung, Auto-Kauf, „Stufe X folgt bald“ über `state.tease`) läuft über `LAYER_KEYS`.
 - **Offline-Fortschritt:** Beim Öffnen und nach langen Lücken (Hintergrund-Tab, > 60 s) rechnet `game.catchUp()` die verpasste Zeit nach – höchstens 8 h (`AP.OFFLINE_MAX`), nicht während der Pause, ohne Resets (nur Erzeugung, passive Gewinne, Auto-Kauf). `lastSeen` wird bei jedem `save()` gesetzt; gespeichert wird alle 10 s sowie bei `visibilitychange`/`pagehide`/`beforeunload`. Danach erscheint das Fenster „Welcome back“ mit den Zuwächsen.
-- Verlauf der Automatisierung: zuerst Auto-Kauf (BG, CI), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B), dann 10 %/s (CF, CO), dann ×10 (CJ, CT). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
+- Verlauf der Automatisierung: zuerst Auto-Kauf (BG für A, CI für B, DF für C), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B, DD für C), dann 10 %/s (CF, CO, DH), dann ×10 (CJ, CT, DN). Upgrades behalten: BC/BK (A), CC/CK (B), DC/DJ (C). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
 
 ## Balance
 
@@ -75,7 +76,7 @@ Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
 **Workflow nach Änderungen an Effekten oder Kosten:**
 1. Im Projektordner einen Server starten: `py -m http.server 8123`
 2. `http://localhost:8123/tools/sim.html` → Zeiten prüfen.
-3. Bei Abweichungen `tools/tune.html` öffnen (stellt B und C neu ein; `?all` stellt auch A neu ein). Dauert einige Minuten. Ergebnis (`window.tuneResult`) in `COSTS` und `LAYERS[..].req` übernehmen, dann erneut `sim.html`.
+3. Bei Abweichungen `tools/tune.html` öffnen (stellt B und C neu ein; `?all` stellt auch A neu ein; `?layers=D` nur Stufe D – rechnet ab einem Snapshot bei CZ, A–C bleiben unberührt). Dauert einige Minuten. Ergebnis (`window.tuneResult`) in `COSTS` und `LAYERS[..].req` übernehmen, dann erneut `sim.html`.
 4. Die Simulation (`tools/simcore.js`) bildet den „aktiven Spieler“ ab: kauft sofort, resettet bei Verdopplung oder wenn das nächste Upgrade dadurch bezahlbar wird, min. 2 s zwischen manuellen Resets.
 
 ## Testen

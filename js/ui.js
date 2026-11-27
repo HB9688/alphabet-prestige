@@ -82,7 +82,7 @@
   let tabsKey = '';
   function renderTabs() {
     const s = game.state;
-    const key = s.unlocked.join('') + '|' + s.tab + '|' + s.teaseD + '|' + AP.lang;
+    const key = s.unlocked.join('') + '|' + s.tab + '|' + s.tease + '|' + AP.lang;
     if (key === tabsKey) return;
     tabsKey = key;
     const nav = $('tabs');
@@ -103,7 +103,7 @@
     if (nextL) {
       const lock = document.createElement('div');
       lock.className = 'tab locked';
-      const soon = !game.LAYERS[nextL] && s.teaseD;
+      const soon = !game.LAYERS[nextL] && !!s.tease;
       lock.title = soon ? t('lockSoon', { L: nextL }) : t('lockBy', { id: last + 'Z' });
       lock.innerHTML = LOCK_SVG + '<span class="letter">' + nextL + '</span>' + (soon ? '<span class="long">' + t('soon') + '</span>' : '');
       nav.appendChild(lock);
@@ -211,7 +211,7 @@
     });
     $('upTitle').textContent = t('upgrades', { L });
     $('upCount').textContent = t('boughtCount', { n: game.count(L) });
-    $('doneNote').textContent = L === 'C' && game.state.teaseD ? t('doneNote') : '';
+    $('doneNote').textContent = L === game.LAYER_KEYS[game.LAYER_KEYS.length - 1] && game.state.tease ? t('doneNote', { L: game.state.tease }) : '';
     positionUpgrades(L, nextIdx);
   }
 

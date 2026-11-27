@@ -23,21 +23,33 @@ const fromLog = l => Dec.pow(10, l);
 // auf 2 gültige Stellen runden, z. B. 10^4.37 → 2.3e4
 const round2 = l => { const e = Math.floor(l); let m = Math.round(Math.pow(10, l - e + 1)); return new Dec(m + 'e' + (e - 1)); };
 
-// Schritte in zeitlicher Reihenfolge
+// Schritte in zeitlicher Reihenfolge.
+// Standard: B und C neu einstellen (?all: auch A). ?layers=D: nur Stufe D – gerechnet ab einem Snapshot bei CZ
+// (schnell, A–C bleiben unverändert). Allgemein: ?layers=DE usw. stellt diese Stufen ab dem Tor davor ein.
+const params = new URLSearchParams(location.search);
+const tuneA = params.has('all');
+const layers = (params.get('layers') || 'BC').toUpperCase().split('');
+const interval = { A: i => 10 + 9.5 * i, B: i => 60 + 8 * i, C: i => 60 + 8 * i, D: i => 60 + 10 * i };
+const resetInterval = { B: 150, C: 150, D: 960 };
 const steps = [];
-const intA = i => 10 + 9.5 * i, intB = i => 60 + 8 * i, intC = i => 60 + 8 * i;
-const tuneA = location.search.includes('all');
-if (tuneA) AP.UPGRADE_ORDER.A.forEach((id, i) => { if (i >= 2) steps.push({ key: id, kind: 'cost', id, interval: intA(i) }); });
-steps.push({ key: 'reset:B', kind: 'req', layer: 'B', interval: 150 });
-AP.UPGRADE_ORDER.B.forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: intB(i) }));
-steps.push({ key: 'reset:C', kind: 'req', layer: 'C', interval: 150 });
-AP.UPGRADE_ORDER.C.forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: intC(i) }));
+if (tuneA) AP.UPGRADE_ORDER.A.forEach((id, i) => { if (i >= 2) steps.push({ key: id, kind: 'cost', id, interval: interval.A(i) }); });
+layers.forEach(L => {
+  steps.push({ key: 'reset:' + L, kind: 'req', layer: L, interval: resetInterval[L] || 600 });
+  AP.UPGRADE_ORDER[L].forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: (interval[L] || interval.D)(i) }));
+});
 
 // alles noch nicht getunte sperren
 steps.forEach(st => { if (st.kind === 'cost') AP.UPGRADES[st.id].cost = LOCK; else AP.LAYERS[st.layer].req = LOCK; });
 const setP = (st, v) => { v = new Dec(v); if (st.kind === 'cost') AP.UPGRADES[st.id].cost = v; else AP.LAYERS[st.layer].req = v; };
 
-let prevT = tuneA ? AP.simulate({ stopAt: 'AB', dt: 1 }).bought.AB : AP.simulate({ stopAt: 'AZ', dt: 1 }).bought.AZ;
+// Startpunkt: Tor der Stufe vor der ersten getunten Stufe. Für spätere Stufen ab Snapshot weiterrechnen.
+const first = tuneA ? 'A' : layers[0];
+const gate = first === 'A' ? 'AB' : AP.LETTERS[AP.LETTERS.indexOf(first) - 1] + 'Z';
+const fast = !tuneA && first >= 'D';
+const DT = fast ? 0.5 : 1;
+const startRun = AP.simulate({ stopAt: gate, snapshotAt: fast ? gate : null, dt: DT, maxTime: 12 * 3600 });
+const snap = fast ? startRun.snapshot : null;
+let prevT = startRun.bought[gate];
 let prevLog = 0;
 let k = 0;
 const results = [];
@@ -47,7 +59,7 @@ function stepOnce() {
   const target = prevT + st.interval;
   const timeFor = v => {
     setP(st, v);
-    const r = AP.simulate({ stopAt: st.key, dt: 1, maxTime: target * 1.5 + 600 });
+    const r = AP.simulate({ stopAt: st.key, dt: DT, from: snap, maxTime: target * 1.5 + 600 });
     if (!r.done) return Infinity;
     return st.kind === 'cost' ? r.bought[st.id] : r.firstReset[st.layer];
   };
@@ -60,7 +72,7 @@ function stepOnce() {
   if (st.kind === 'cost' && v.lt(1)) v = new Dec(1);
   const t = timeFor(v);
   if (st.kind === 'cost') prevLog = Dec.max(v, 1).log10();
-  if (st.key === 'reset:B' || st.key === 'reset:C') prevLog = 0;
+  if (st.kind === 'req') prevLog = 0;
   results.push({ key: st.key, v, t, target });
   out.textContent = results.map(r => r.key.padEnd(8) + String(r.v).padEnd(12) + AP.fmtT(r.t) + '  (Ziel ' + AP.fmtT(r.target) + ')').join('\n');
   prevT = isFinite(t) ? t : target;
