@@ -21,7 +21,7 @@
       unlocked: ['A'],
       teaseD: false,
       tab: 'A',
-      lang: 'de',
+      lang: 'en', // Primärsprache Englisch; Deutsch umschaltbar
       paused: false, // Pause: keine Zeit, keine Erzeugung, keine Käufe/Resets
       // höchster Upgrade-Index je Stufe, der schon einmal aufgedeckt war (bleibt nach Resets sichtbar)
       revealed: { A: 2, B: 2, C: 2 },

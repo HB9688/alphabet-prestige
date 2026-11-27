@@ -10,7 +10,7 @@
 
   let game = AP.createGame(AP.loadSaved());
   let skipSave = false;
-  AP.lang = game.state.lang === 'en' ? 'en' : 'de';
+  AP.lang = game.state.lang === 'de' ? 'de' : 'en'; // Englisch = Primärsprache
 
   // ---------- Zahlenformat ----------
   function fmt(n, digits) {
@@ -58,6 +58,12 @@
     $('statsBtn').title = t('stats');
     applyPause();
     $('statsClose').setAttribute('aria-label', t('close'));
+    ['info', 'help'].forEach(k => {
+      $(k + 'Btn').setAttribute('aria-label', t(k)); $(k + 'Btn').title = t(k);
+      $(k + 'Close').setAttribute('aria-label', t('close'));
+    });
+    renderInfo();
+    renderHelp();
     statsKey = '';
     tabsKey = '';
     rows.forEach(r => { r.last = ''; });
@@ -281,9 +287,15 @@
   $('autoBuy').addEventListener('change', e => { game.state.auto['buy' + game.state.tab] = e.target.checked; });
 
   function showSaved(ok) {
-    const text = ok ? t('saved', { t: new Date().toLocaleTimeString(AP.lang === 'en' ? 'en-US' : 'de-DE') }) : t('saveFail');
+    const locale = AP.lang === 'en' ? 'en-US' : 'de-DE', now = new Date();
+    const text = ok ? t('saved', { t: now.toLocaleTimeString(locale) }) : t('saveFail');
     $('saveInfo').textContent = text;
-    $('saveInfoTop').textContent = text;
+    // oben: voller Text (Desktop) und Kurzform „✓ 07:55“ (Handy, wenig Platz neben Info/Hilfe/Sprache)
+    const short = ok ? '✓ ' + now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) : '✗';
+    $('saveInfoTop').innerHTML = '<span class="full"></span><span class="short"></span>';
+    $('saveInfoTop').firstChild.textContent = text;
+    $('saveInfoTop').lastChild.textContent = short;
+    $('saveInfoTop').title = text;
   }
 
   // Das Menü blendet sich 5 s nach dem Öffnen bzw. nach der letzten Aktion darin selbst aus.
@@ -294,19 +306,56 @@
     if (!$('settingsMenu').hidden) menuTimer = setTimeout(() => toggleMenu(false), MENU_TIMEOUT);
   }
   function toggleMenu(open) {
-    if (open) toggleStats(false);
+    if (open) closePanels('menu');
     $('settingsMenu').hidden = !open;
     armMenuTimer();
     $('gearBtn').setAttribute('aria-expanded', open);
   }
   $('gearBtn').addEventListener('click', e => { e.stopPropagation(); toggleMenu($('settingsMenu').hidden); });
   ['click', 'pointerdown', 'keydown'].forEach(ev => $('settingsMenu').addEventListener(ev, armMenuTimer));
+  // Immer nur ein Fenster offen: Zahnrad-Menü, Statistik, Info oder Hilfe
+  function closePanels(except) {
+    if (except !== 'menu' && !$('settingsMenu').hidden) toggleMenu(false);
+    if (except !== 'stats' && !$('statsPanel').hidden) toggleStats(false);
+    if (except !== 'info') toggleSide('info', false);
+    if (except !== 'help') toggleSide('help', false);
+  }
   document.addEventListener('click', e => {
-    if ($('settings').contains(e.target)) return;
+    if ($('settings').contains(e.target) || $('topRight').contains(e.target)) return;
     if (!$('settingsMenu').contains(e.target)) toggleMenu(false);
     if (!$('statsPanel').contains(e.target)) toggleStats(false);
+    ['info', 'help'].forEach(k => { if (!$(k + 'Panel').contains(e.target)) toggleSide(k, false); });
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleMenu(false); toggleStats(false); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanels(); });
+
+  // ---------- Info & Hilfe (Fenster oben rechts) ----------
+  function toggleSide(k, open) {
+    if (open) closePanels(k);
+    $(k + 'Panel').hidden = !open;
+    $(k + 'Btn').setAttribute('aria-expanded', open);
+  }
+  ['info', 'help'].forEach(k => {
+    $(k + 'Btn').addEventListener('click', e => { e.stopPropagation(); toggleSide(k, $(k + 'Panel').hidden); });
+    $(k + 'Close').addEventListener('click', () => toggleSide(k, false));
+  });
+  const esc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  function renderInfo() {
+    const locale = AP.lang === 'de' ? 'de-DE' : 'en-US';
+    const date = d => new Date(d + 'T12:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    $('infoBody').innerHTML =
+      '<p class="credits">' + esc(t('credits', { a: '\u0000' })).replace('\u0000', '<strong>' + esc(AP.AUTHOR) + '</strong>') + '</p>' +
+      '<p class="sub"><a href="' + AP.REPO_URL + '" target="_blank" rel="noopener">' + esc(t('source')) + '</a></p>' +
+      '<div class="version">' + esc(t('version', { v: AP.VERSION })) + '</div>' +
+      '<h3>' + esc(t('changelog')) + '</h3>' +
+      '<ul class="changelog">' + AP.CHANGELOG.map(c =>
+        '<li><b>' + esc(c.v) + '</b> <span class="sub">' + esc(date(c.date)) + '</span><br>' + esc(c[AP.lang] || c.en) + '</li>').join('') + '</ul>';
+  }
+  function renderHelp() {
+    const keyboard = !(MOBILE.matches || TOUCH.matches); // Tastenkürzel nur mit Tastatur zeigen
+    $('helpBody').innerHTML = (AP.HELP[AP.lang] || AP.HELP.en).filter(sec => keyboard || !sec.keys).map(sec =>
+      '<h3>' + esc(sec.title) + '</h3><ul>' + sec.lines.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>').join('');
+  }
+  MOBILE.addEventListener('change', renderHelp);
 
   // Tastenkürzel: Buchstabe einer freigeschalteten Stufe = Prestige-Reset dieser Stufe (A, B, C …)
   document.addEventListener('keydown', e => {
@@ -352,7 +401,7 @@
   // ---------- Statistik ----------
   let statsKey = '';
   function toggleStats(open) {
-    if (open) toggleMenu(false);
+    if (open) closePanels('stats');
     $('statsPanel').hidden = !open;
     $('statsBtn').setAttribute('aria-expanded', open);
     if (open) renderStats();
@@ -408,7 +457,7 @@
     try {
       game = AP.createGame(AP.decodeSave(text));
       game.save();
-      AP.lang = game.state.lang === 'en' ? 'en' : 'de';
+      AP.lang = game.state.lang === 'de' ? 'de' : 'en'; // Englisch = Primärsprache
       applyLang();
       switchTab(game.state.unlocked.includes(game.state.tab) ? game.state.tab : 'A');
     } catch (e) { alert(t('invalid')); }

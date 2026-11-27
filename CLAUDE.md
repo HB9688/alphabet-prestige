@@ -5,7 +5,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 ## Technik – feste Regeln
 
 - **Kein Build, keine Abhängigkeiten, keine ES-Module, kein `fetch`.** Das Spiel muss per Doppelklick auf `index.html` (file://) laufen. Alle Skripte sind klassische `<script>`-Dateien und hängen an den globalen Namensraum `globalThis.AP`.
-- Ladereihenfolge in `index.html`: `palette.js` → `i18n.js` → `upgrades.js` → `game.js` → `ui.js`.
+- Ladereihenfolge in `index.html`: `palette.js` → `i18n.js` → `info.js` → `upgrades.js` → `game.js` → `ui.js`.
 - `game.js` enthält nur Logik ohne DOM, damit die Balance-Tools in `tools/` sie wiederverwenden können. DOM-Code gehört nach `ui.js`.
 - Zahlen sind JS-`Number` (bis ~1e308). Wird das für spätere Stufen zu knapp, auf eine Big-Number-Bibliothek umstellen (z.B. break_infinity.js als lokale Datei, nicht per CDN).
 - **Spielstände nicht kaputt machen:** gespeichert wird in `localStorage` unter `alphabetPrestige.save.v1`. Neue State-Felder in `defaultState()` ergänzen – `merge()` füllt sie bei alten Spielständen auf. Upgrade-IDs nie umbenennen oder umsortieren, ohne eine Migration einzubauen.
@@ -16,6 +16,13 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - Alles, was auf `main` landet, ist ~1 Minute später live. Vor dem Merge auf `main` im Browser testen.
 - **Cache:** GitHub Pages lässt Browser Dateien ~10 min zwischenspeichern. Neues `index.html` mit altem `ui.js` aus dem Cache bricht das Spiel (keine Tabs/Upgrades). Deshalb hängen CSS und Skripte in `index.html` mit `?v=N` an – **bei jeder Änderung an CSS/JS die Zahl überall um 1 erhöhen.**
 
+## Versionen
+
+- Schema **0.MINOR.PATCH**, Stand in `AP.VERSION` (`js/info.js`). 1.0 erst bei einem größeren Meilenstein.
+- **Bei jedem Merge auf `main` die Version erhöhen:** PATCH bei Kleinigkeiten/Fixes (kein Eintrag), MINOR bei größeren Änderungen – dann oben in `AP.CHANGELOG` einen **kurzen** Eintrag in EN und DE ergänzen (z. B. „Balancing angepasst, Komfort-Funktionen ergänzt“, keine Einzelheiten).
+- Unabhängig davon weiterhin `?v=N` (Cache) bei jeder CSS/JS-Änderung erhöhen.
+- Hilfe-Texte (`AP.HELP` in `js/info.js`) bei neuen Tastenkürzeln oder Mechaniken mitpflegen; Abschnitte mit `keys: true` erscheinen nur mit Tastatur (nicht Handy/Touch).
+
 ## Design – vom Nutzer festgelegt
 
 - **Farben:** die 26 Töne aus `farbverlauf.txt` (A = `#FFF4E6` … Z = `#6B1200`), gespiegelt in `js/palette.js`. **Palette exakt so verwenden**, auch wenn späte Stufen auf Schwarz dunkel wirken – der Nutzer hat das ausdrücklich so gewählt. Ändert sich `farbverlauf.txt`, `palette.js` mitziehen.
@@ -23,16 +30,17 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - **Überschrift** „Alphabet Prestige“ mit Verlauf über alle 26 Farben, genau auf Textbreite (`display:inline-block`), darunter eine weiche Palettenleiste.
 - **Tabs** wie Browser-Tabs, einer pro freigeschalteter Stufe, plus ein Schloss-Tab für die nächste. Tabs werden schmaler, je mehr Stufen frei sind; bei wenig Platz nur der Buchstabe.
 - **Layout (Desktop):** links ein hinterlegtes Feld mit der Upgrade-Liste, rechts das feste Panel (Punkte, Stufenpunkte, Reset) – kurzer Mausweg zwischen Reset- und Kaufen-Knopf. Mobil untereinander: Panel oben, Upgrades darunter. Upgrade-Liste: **immer 8 Einträge sichtbar – die letzten 5 gekauften und die nächsten 3 offenen**; **mobil (< 760 px) nur 2 – das zuletzt gekaufte und das nächste offene (alle gekauft: die letzten 2)**; alle 26 per Scrollen erreichbar. Nach einem Kauf scrollt die Liste automatisch nach.
-- **Zahnrad-Menü (Desktop und mobil):** Speichern/Export/Import/Neu starten liegen im Zahnrad-Menü oben links (Zeile mit DE | EN), daneben das Statistik-Icon und „Gespeichert …“. Das Menü schiebt den Inhalt nach unten und blendet sich 5 s nach dem Öffnen bzw. nach der letzten Aktion darin aus.
+- **Zahnrad-Menü (Desktop und mobil):** Speichern/Export/Import/Neu starten liegen im Zahnrad-Menü oben links (Zeile mit DE | EN), daneben das Statistik-Icon und „Gespeichert …“ (mobil aus Platzgründen nur „✓ 07:55“, voller Text als Tooltip). Das Menü schiebt den Inhalt nach unten und blendet sich 5 s nach dem Öffnen bzw. nach der letzten Aktion darin aus.
 - **Mobil (< 760 px):** Punkte-Felder kompakter.
 - **Pause:** Knopf rechts neben dem Statistik-Icon (Pause-/Play-Symbol). Pausiert hält `state.paused` die Spielzeit, jede Erzeugung, Käufe und Resets an (`tick`, `canBuy`, `canReset` in `game.js`); Spielfeld gedimmt, daneben „Pausiert“, mittig ein Hinweis-Fenster („Spiel pausiert“, wie man fortsetzt, Knopf „Fortsetzen“; Hinweis auf die Leertaste nur am Desktop, nicht mobil/Touch). Bleibt nach Neuladen erhalten. Tastenkürzel: **Leertaste** (nicht P – P wird später eine Prestigestufe).
+- **Info & Hilfe:** oben rechts links neben EN | DE ein Info-Knopf (Urheber „A game by HB9688 – developed with the help of Claude (Anthropic)“, Link zum Repository, Version, Versionsgeschichte) und ein Hilfe-Knopf „?“ (Ziel, Tastenkürzel nur am Desktop, Tipps). Am Desktop schweben die Fenster rechts, mobil schieben sie den Inhalt nach unten. Es ist immer nur ein Fenster offen (Zahnrad-Menü, Statistik, Info, Hilfe); Esc, × oder Klick daneben schließen.
 - **Statistik:** Diagramm-Icon oben links rechts neben dem Zahnrad. Öffnet ein Feld mit Spielzeit, Punkten, Käufen und je Stufe Resets/Bestwerten (mobil schiebt es den Inhalt nach unten, am Desktop schwebt es). Zähler liegen in `state.stats` (`game.js`); neue Statistik-Werte dort ergänzen und in `renderStats()` (`ui.js`) anzeigen.
 - **Auto-Kauf:** Häkchen „Auto-Kauf“ im Kopf der Upgrade-Liste zwischen „X-Upgrades“ und „n / 26 gekauft“ (sobald freigeschaltet). Ein Feld „Automatisierung“ gibt es nicht mehr.
 - **Passive Erzeugung:** Sobald eine Stufe passiv erzeugt (`passive:X`), steht unter ihren Punkten „+x A /s“; „Nächster Reset“ mit Balken entfällt, der Prestige-Knopf bleibt.
 - **Reset-Anzeige:** Unter dem Balken steht der Bedarf für den nächsten Punkt (ab Gewinn 100 feste Zielstufen 100 → 200 → 500 …). Ist die nächsthöhere Stufe frei **und** das Freischalt-Upgrade (xZ) dieses Durchgangs gekauft oder bezahlbar, steht dort stattdessen der Bedarf für deren nächsten Punkt.
 - **Reset-Knöpfe:** Sind alle Upgrades der Stufe darunter gekauft und lohnt sich ein manueller Reset dort (ohne passive Erzeugung immer, mit passiver Erzeugung solange der Gewinn ≥ ihr Bestand ist), steht neben dem Prestige-Knopf (2/3 Breite) ein kleiner Reset-Knopf für diese Stufe (1/3), z. B. auf Tab B „+1,2e16 A“.
 - **Tastenkürzel:** Buchstabe einer freigeschalteten Stufe (A, B, C …) löst deren Prestige-Reset aus, unabhängig vom aktiven Tab (nicht in Eingabefeldern, nicht mit Strg/Alt/Cmd, kein Dauerfeuer beim Gedrückthalten). Hinweis im Tooltip der Prestige-Knöpfe.
-- **Sprache:** Umschalter DE | EN oben rechts. **Jeder neue sichtbare Text braucht beide Sprachen** – UI-Texte in `AP.STRINGS` (`js/i18n.js`), englische Upgrade-Texte in `AP.UPGRADE_EN` (gleiche Reihenfolge wie in `upgrades.js`).
+- **Sprache:** **Englisch ist Primärsprache** (Standard für neue Spieler, Fallback in `AP.t()`), Deutsch zweite Sprache. Umschalter **EN | DE** oben rechts. Bestehende Spielstände behalten ihre gespeicherte Sprache. **Jeder neue sichtbare Text braucht beide Sprachen** – UI-Texte in `AP.STRINGS` (`js/i18n.js`), englische Upgrade-Texte in `AP.UPGRADE_EN` (gleiche Reihenfolge wie in `upgrades.js`); statische Texte in `index.html` auf Englisch.
 
 ## Upgrades – Konventionen
 

@@ -67,6 +67,8 @@ h1 {
   background: transparent; color: var(--muted); cursor: pointer;
 }
 .gear svg { width: 17px; height: 17px; }
+#saveInfoTop .short { display: none; }
+@media (max-width: 760px) { #saveInfoTop .short { display: inline; } }
 #pauseBtn .ico-play, #pauseBtn[aria-pressed="true"] .ico-pause { display: none; }
 #pauseBtn[aria-pressed="true"] .ico-play { display: block; }
 .gear[aria-pressed="true"],
@@ -96,12 +98,21 @@ h1 {
 .stats dt { color: #b5b5b5; }
 .stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .stats .note { margin-top: 10px; font-size: 12px; color: var(--muted); }
+/* Info/Hilfe: am Desktop rechts schwebend */
+.stats.side-right { left: auto; right: 0; }
+.stats ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; }
+.stats li { margin: 3px 0; color: #c8c8c8; }
+.stats li b { color: var(--stage); }
+.stats ul.changelog { list-style: none; padding-left: 0; }
+.stats ul.changelog li { margin: 8px 0; }
+.stats .credits { margin: 10px 0 2px; font-size: 14px; }
+.stats .credits strong { color: var(--stage); }
+.stats a { color: var(--stage); }
+.stats .version { margin-top: 10px; font-size: 18px; font-weight: 700; }
 
-/* Sprachumschalter oben rechts */
+/* Oben rechts: Info, Hilfe und Sprachumschalter */
+.top-right { position: absolute; top: 12px; right: 0; z-index: 2; display: flex; align-items: center; gap: 8px; }
 .lang {
-  position: absolute;
-  top: 12px;
-  right: 0;
   display: flex;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -325,7 +336,10 @@ h1 {
   .settings { position: static; }
   .menu { display: block; flex: 0 0 100%; margin: 8px 0 0; }
   .stats { position: static; flex: 0 0 100%; width: auto; max-height: none; margin-top: 8px; }
-  .lang { position: static; border: none; }
+  .top-right { position: static; gap: 6px; }
+  /* wenig Platz: nur „✓ 07:55“; pausiert ersetzt „Pausiert“ die Speicherzeit */
+  #saveInfoTop .full, .is-paused #saveInfoTop { display: none; }
+  .lang { border: none; }
   .lang button { border: 1px solid var(--line); border-radius: 6px; margin-left: 4px; }
 
   /* Punkte-Felder kompakter */
