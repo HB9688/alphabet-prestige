@@ -322,6 +322,7 @@
     const p = !!game.state.paused;
     document.body.classList.toggle('is-paused', p);
     $('pausedInfo').hidden = !p;
+    $('pauseOverlay').hidden = !p;
     $('pauseBtn').setAttribute('aria-pressed', p);
     $('pauseBtn').title = t(p ? 'resume' : 'pause') + ' – ' + t('spaceKey');
     $('pauseBtn').setAttribute('aria-label', t(p ? 'resume' : 'pause'));
@@ -333,6 +334,7 @@
     render();
   }
   $('pauseBtn').addEventListener('click', togglePause);
+  $('resumeBtn').addEventListener('click', togglePause);
   // Leertaste = Pause. In der Capture-Phase abfangen, damit sie weder scrollt noch einen fokussierten Knopf auslöst.
   const isSpace = e => e.key === ' ' || e.code === 'Space';
   const inField = e => e.target.closest && e.target.closest('input, textarea, select, [contenteditable]');

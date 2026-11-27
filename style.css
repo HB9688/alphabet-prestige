@@ -197,6 +197,20 @@ h1 {
 .is-paused #stage { opacity: .55; }
 .sub.paused-info { color: var(--stage); font-weight: 600; }
 
+/* Pause-Hinweis mittig; die Fläche drumherum lässt Klicks durch (Pause-Knopf oben links bleibt erreichbar) */
+.pause-overlay {
+  position: fixed; inset: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; pointer-events: none;
+}
+.pause-card {
+  pointer-events: auto; width: min(340px, 100%); text-align: center;
+  padding: 20px 22px; box-shadow: 0 12px 40px rgba(0, 0, 0, .7);
+  border-color: var(--stage);
+}
+.pause-title { font-size: 20px; font-weight: 700; }
+.pause-card .sub { margin: 8px 0 4px; font-size: 14px; }
+
 #panel { order: 2; }
 .upcard { order: 1; }
 
