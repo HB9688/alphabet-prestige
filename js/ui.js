@@ -120,11 +120,21 @@
 
   // ---------- Upgrade-Feld ----------
   let rows = [];
+  let msRows = []; // Meilensteine der Stufe als ★-Einträge oben in der Liste
   let scrollKey = '';
   function buildUpgrades(L) {
     const box = $('upgrades');
     box.innerHTML = '';
     scrollKey = '';
+    msRows = AP.MILESTONES.filter(m => m.layer === L).map(m => {
+      const el = document.createElement('div');
+      el.className = 'up milestone-row';
+      el.innerHTML = '<div class="id">★</div>' +
+        '<div><div class="name"></div><div class="desc"></div></div>' +
+        '<div class="ms-status"></div>';
+      box.appendChild(el);
+      return { m, el, name: el.querySelector('.name'), desc: el.querySelector('.desc'), status: el.querySelector('.ms-status'), last: '' };
+    });
     rows = AP.UPGRADE_ORDER[L].map(id => {
       const u = AP.UPGRADES[id];
       const el = document.createElement('div');
@@ -147,8 +157,10 @@
     const first = !scrollKey;
     scrollKey = key;
     const box = $('upgrades');
-    const start = Math.max(0, Math.min(nextIdx - view.bought, rows.length - view.visible));
-    const row = rows[start].el;
+    // Meilenstein-Zeilen stehen vor den Upgrades und zählen bei der Position mit
+    const all = box.children, at = nextIdx + msRows.length;
+    const start = Math.max(0, Math.min(at - view.bought, all.length - view.visible));
+    const row = all[start];
     const top = row.offsetTop;
     if (first) { box.style.scrollBehavior = 'auto'; box.scrollTop = top; box.style.scrollBehavior = ''; }
     else box.scrollTop = top;
@@ -209,16 +221,18 @@
       r.btn.textContent = btn;
       r.btn.disabled = !can;
     });
-    $('upTitle').textContent = t('upgrades', { L });
+    msRows.forEach(r => {
+      const done = game.milestoneReached(r.m.id);
+      const key = AP.lang + done;
+      if (key === r.last) return;
+      r.last = key;
+      r.el.className = 'up milestone-row' + (done ? ' bought' : '');
+      r.name.textContent = t('ms' + r.m.id + 'Name');
+      r.desc.textContent = r.desc.title = t('ms' + r.m.id + 'Desc');
+      r.status.textContent = t(done ? 'msDone' : 'msOpen');
+    });
+    $('upTitle').textContent = t(msRows.length ? 'upgradesMs' : 'upgrades', { L });
     $('upCount').textContent = t('boughtCount', { n: game.count(L) });
-    // Meilensteine dieser Stufe: ✓ erreicht, ○ noch offen
-    const ms = AP.MILESTONES.filter(m => m.layer === L);
-    $('milestone').hidden = !ms.length;
-    if (ms.length) {
-      const txt = ms.map(m => (game.milestoneReached(m.id) ? '✓ ' : '○ ') + t('ms' + m.id)).join('\n');
-      if ($('milestone').textContent !== txt) $('milestone').textContent = txt;
-      $('milestone').classList.toggle('done', ms.every(m => game.milestoneReached(m.id)));
-    }
     $('doneNote').textContent = L === game.LAYER_KEYS[game.LAYER_KEYS.length - 1] && game.state.tease ? t('doneNote', { L: game.state.tease }) : '';
     positionUpgrades(L, nextIdx);
   }
