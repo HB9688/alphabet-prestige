@@ -2,6 +2,12 @@
 
 Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit je 26 Upgrades. Aktuell spielbar: **A bis D**. Der Nutzer schreibt Deutsch – antworte auf Deutsch.
 
+## Spielausrichtung (vom Nutzer festgelegt)
+
+- **Incremental-Spiel, kein Idle-Spiel.** Ziel ist Spaß: Man soll immer etwas tun können. **Keine reinen Echtzeit-Wartezeiten als Mechanik** (keine Timer, Forschungen oder Aufträge, bei denen man nur warten kann).
+- **Offline-Fortschritt ist sekundär:** Abwesenheit zählt mit 50 % Tempo (max. 8 h); kurze Lücken (Fensterwechsel, Hintergrund-Tab, Schritte bis 5 min) laufen voll weiter. Das Spiel darf nicht hauptsächlich offline vorankommen.
+- **Neue Stufen ab E:** deutlich länger als D und mit einer neuen, aktiven Mechanik, ohne die xZ **nicht erreichbar** ist – per Simulation nachweisen (Spieler ohne Mechanik erreicht xZ nie).
+
 ## Technik – feste Regeln
 
 - **Kein Build, keine Abhängigkeiten, keine ES-Module, kein `fetch`.** Das Spiel muss per Doppelklick auf `index.html` (file://) laufen. Alle Skripte sind klassische `<script>`-Dateien und hängen an den globalen Namensraum `globalThis.AP`.
@@ -59,7 +65,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - **Meilensteine** (`MILESTONES` in `game.js`): dauerhafte Boni ab einer Bedingung, überstehen jeden Reset; wirken als Pseudo-Upgrades in `bought()` mit normalen Effekt-Arten. Bisher **D1**: ab dem ersten D-Reset Auto-Kauf A und 1 % A-Erzeugung (wie BG und CD, vom Nutzer gewünscht, damit das Neuspielen von A–C nach dem ersten D-Reset nicht zäh wird). Anzeige als **★-Eintrag oben in der Upgrade-Liste** der Stufe (gleiches Kachel-Design, gestrichelt solange offen, „✓ erreicht“ wie ein gekauftes Upgrade); die Liste heißt dann „X-Upgrades & Meilensteine“ (vom Nutzer so gewünscht, spart Platz am Handy). Texte `ms<ID>Name`/`ms<ID>Desc`, `msDone`/`msOpen`, `upgradesMs` in `AP.STRINGS`. „n / 26 gekauft“ zählt nur Upgrades.
 - **Stufe D – Balance-Entscheidungen des Nutzers:** Mindestmenge `req` 1e9 C (bei 1e7 bekam man nach etwas Warten ~17 D und kaufte DA–DK auf einmal – „zu schnell“); DA–DK kosten steigend 1,1,1,1,2,2,2,3,3,4,5 (von Hand), DL–DZ getunt. Wer nach CZ 15 min wartet, bekommt ~5 D und kauft damit 4 Upgrades. DL–DZ je ~4 min (Nutzer: Ende war mit 2–3 min zu schnell); DN nur ×3 statt ×10, sonst explodiert die passive C-Erzeugung am Ende von D.
 - **Neue Stufe hinzufügen:** Buchstabe in `LAYER_KEYS` und `LAYERS` (`game.js`), Liste + `COSTS` in `upgrades.js`, englische Texte in `AP.UPGRADE_EN`, Torschalter `xZ` der Vorstufe ohne „(folgt bald)“. Alles andere (Tabs, Statistik, Tastenkürzel, passive Erzeugung, Auto-Kauf, „Stufe X folgt bald“ über `state.tease`) läuft über `LAYER_KEYS`.
-- **Offline-Fortschritt:** Beim Öffnen und nach langen Lücken (Hintergrund-Tab, > 60 s) rechnet `game.catchUp()` die verpasste Zeit nach – höchstens 8 h (`AP.OFFLINE_MAX`), nicht während der Pause, ohne Resets (nur Erzeugung, passive Gewinne, Auto-Kauf). `lastSeen` wird bei jedem `save()` gesetzt; gespeichert wird alle 10 s sowie bei `visibilitychange`/`pagehide`/`beforeunload`. Danach erscheint das Fenster „Welcome back“ mit den Zuwächsen.
+- **Offline-Fortschritt:** Beim Öffnen und nach langen Lücken (> 5 min) rechnet `game.catchUp()` die verpasste Zeit nach – höchstens 8 h (`AP.OFFLINE_MAX`), angerechnet mit 50 % Tempo (`AP.OFFLINE_RATE`; Schleifenschritte ≤ 5 min – z. B. gedrosselter Hintergrund-Tab – laufen voll), nicht während der Pause, ohne Resets (nur Erzeugung, passive Gewinne, Auto-Kauf). `lastSeen` wird bei jedem `save()` gesetzt; gespeichert wird alle 10 s sowie bei `visibilitychange`/`pagehide`/`beforeunload`. Danach erscheint das Fenster „Welcome back“ mit den Zuwächsen.
 - Verlauf der Automatisierung: zuerst Auto-Kauf (BG für A – ab dem ersten D-Reset dauerhaft per Meilenstein D1 –, CI für B, DF für C), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B, DD für C), dann 10 %/s (CF, CO, DH), dann ×10 (CJ, CT) bzw. ×3 (DN → C 30 %/s). Upgrades behalten: BC/BK (A), CC/CK (B), DC/DJ (C). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
 
 ## Balance

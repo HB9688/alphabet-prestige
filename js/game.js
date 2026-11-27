@@ -312,6 +312,8 @@
   AP.createGame = createGame;
   AP.LAYERS = LAYERS;
   AP.OFFLINE_MAX = 8 * 3600; // höchstens 8 h Abwesenheit werden angerechnet
+  // Incremental statt Idle (Nutzer): Abwesenheit zählt nur mit halbem Tempo – aktives Spielen soll klar vorne liegen
+  AP.OFFLINE_RATE = 0.5;
   AP.loadSaved = function () {
     try { const raw = localStorage.getItem(SAVE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
   };
