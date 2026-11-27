@@ -211,6 +211,14 @@
     });
     $('upTitle').textContent = t('upgrades', { L });
     $('upCount').textContent = t('boughtCount', { n: game.count(L) });
+    // Meilensteine dieser Stufe: ✓ erreicht, ○ noch offen
+    const ms = AP.MILESTONES.filter(m => m.layer === L);
+    $('milestone').hidden = !ms.length;
+    if (ms.length) {
+      const txt = ms.map(m => (game.milestoneReached(m.id) ? '✓ ' : '○ ') + t('ms' + m.id)).join('\n');
+      if ($('milestone').textContent !== txt) $('milestone').textContent = txt;
+      $('milestone').classList.toggle('done', ms.every(m => game.milestoneReached(m.id)));
+    }
     $('doneNote').textContent = L === game.LAYER_KEYS[game.LAYER_KEYS.length - 1] && game.state.tease ? t('doneNote', { L: game.state.tease }) : '';
     positionUpgrades(L, nextIdx);
   }

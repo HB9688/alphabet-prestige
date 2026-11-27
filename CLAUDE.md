@@ -56,9 +56,10 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 - AA ist kostenlos und erzeugt 1 Punkt/s. A-Reset ab 10 Punkten: Gewinn `floor((Quelle/req)^exp × Multiplikatoren)`.
 - Ein Reset der Stufe X setzt Punkte und alle niedrigeren Stufen (Punkte und Upgrades) zurück; `keep:`-Upgrades behalten die ersten N Upgrades.
+- **Meilensteine** (`MILESTONES` in `game.js`): dauerhafte Boni ab einer Bedingung, überstehen jeden Reset; wirken als Pseudo-Upgrades in `bought()` mit normalen Effekt-Arten. Bisher **D1**: ab dem ersten D-Reset Auto-Kauf A und 1 % A-Erzeugung (wie BG und CD, vom Nutzer gewünscht, damit das Neuspielen von A–C nach dem ersten D-Reset nicht zäh wird). Anzeige als Zeile im Kopf der Upgrade-Liste der Stufe (○ offen / ✓ erreicht), Texte `ms<ID>` in `AP.STRINGS`.
 - **Neue Stufe hinzufügen:** Buchstabe in `LAYER_KEYS` und `LAYERS` (`game.js`), Liste + `COSTS` in `upgrades.js`, englische Texte in `AP.UPGRADE_EN`, Torschalter `xZ` der Vorstufe ohne „(folgt bald)“. Alles andere (Tabs, Statistik, Tastenkürzel, passive Erzeugung, Auto-Kauf, „Stufe X folgt bald“ über `state.tease`) läuft über `LAYER_KEYS`.
 - **Offline-Fortschritt:** Beim Öffnen und nach langen Lücken (Hintergrund-Tab, > 60 s) rechnet `game.catchUp()` die verpasste Zeit nach – höchstens 8 h (`AP.OFFLINE_MAX`), nicht während der Pause, ohne Resets (nur Erzeugung, passive Gewinne, Auto-Kauf). `lastSeen` wird bei jedem `save()` gesetzt; gespeichert wird alle 10 s sowie bei `visibilitychange`/`pagehide`/`beforeunload`. Danach erscheint das Fenster „Welcome back“ mit den Zuwächsen.
-- Verlauf der Automatisierung: zuerst Auto-Kauf (BG für A, CI für B, DF für C), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B, DD für C), dann 10 %/s (CF, CO, DH), dann ×10 (CJ, CT, DN). Upgrades behalten: BC/BK (A), CC/CK (B), DC/DJ (C). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
+- Verlauf der Automatisierung: zuerst Auto-Kauf (BG für A – ab dem ersten D-Reset dauerhaft per Meilenstein D1 –, CI für B, DF für C), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B, DD für C), dann 10 %/s (CF, CO, DH), dann ×10 (CJ, CT, DN). Upgrades behalten: BC/BK (A), CC/CK (B), DC/DJ (C). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
 
 ## Balance
 
@@ -70,6 +71,7 @@ Zielzeiten für einen aktiven Spieler (vom Nutzer vorgegeben: ~1 h bis zur erste
 | AZ / erster B-Reset | ~55–60 min | 54 / 56 min |
 | BZ | ~4 h (vom Nutzer so akzeptiert, B bewusst nicht gestrafft) | 4:02 h |
 | CZ | ~6 h | 5:44 h |
+| erster D-Reset / DZ | ~7,5 h (D ≈ 1,5–1,75 h) | 5:44 / 7:26 h – längste Wartezeit vor DC 19 min |
 
 Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
 

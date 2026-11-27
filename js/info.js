@@ -10,8 +10,8 @@
   // Neueste zuerst; nur größere Versionen, kurz gehalten.
   AP.CHANGELOG = [
     { v: '0.8.0', date: '2026-11-27',
-      en: 'New prestige layer D with 26 upgrades (automation for C, passive C generation)',
-      de: 'Neue Prestigestufe D mit 26 Upgrades (Automatisierung für C, passive C-Erzeugung)' },
+      en: 'New prestige layer D with 26 upgrades and a first milestone (automation for A and C, passive generation)',
+      de: 'Neue Prestigestufe D mit 26 Upgrades und erstem Meilenstein (Automatisierung für A und C, passive Erzeugung)' },
     { v: '0.7.0', date: '2026-11-27',
       en: 'Internal: support for very large numbers (preparation for new layers)',
       de: 'Intern: Unterstützung sehr großer Zahlen (Vorbereitung für neue Stufen)' },
@@ -54,6 +54,7 @@
         'Auto buy can be switched off in the header of the upgrade list.',
         'The game saves automatically every 10 s – use Export in the settings menu for a backup.',
         'Pause stops everything, including the play time in the statistics.',
+        'Milestones (e.g. your first D reset) give permanent bonuses that survive every reset.',
         'Up to 8 h of absence are counted when you come back (not while paused).'
       ] }
     ],
@@ -74,6 +75,7 @@
         'Auto-Kauf lässt sich im Kopf der Upgrade-Liste abschalten.',
         'Der Spielstand speichert alle 10 s automatisch – mit Export im Zahnrad-Menü sicherst du ihn.',
         'Pause hält alles an, auch die Spielzeit in der Statistik.',
+        'Meilensteine (z. B. dein erster D-Reset) geben dauerhafte Boni, die jeden Reset überstehen.',
         'Bis zu 8 h Abwesenheit werden beim Zurückkommen angerechnet (nicht während der Pause).'
       ] }
     ]

@@ -17,6 +17,15 @@
     D: { source: 'C', req: D(1e7), exp: 0.25 } // bewusst niedrig: der erste D-Reset setzt A–C komplett zurück
   };
 
+  // Meilensteine: dauerhafte Boni, sobald eine Bedingung erreicht ist (überstehen jeden Reset).
+  // grants: Pseudo-Upgrades mit denselben Effekt-Arten wie normale Upgrades (zählen in bought()).
+  const MILESTONES = [
+    { id: 'D1', layer: 'D', reached: s => s.layers.D.resets >= 1, // erster D-Reset
+      grants: [{ id: 'D1:autobuyA', kind: 'autobuy:A' }, { id: 'D1:passiveA', kind: 'passive:A', effect: () => 0.01 }] }
+  ];
+  const MS = {};
+  MILESTONES.forEach(m => m.grants.forEach(gr => { gr.milestone = m.id; MS[gr.id] = gr; }));
+
   function defaultState() {
     const layers = {};
     LAYER_KEYS.forEach(L => { layers[L] = { amt: ZERO, up: {}, total: ZERO, resets: 0, lastReset: 0 }; });
@@ -102,13 +111,14 @@
         if (game._cache) return game._cache;
         const out = [];
         LAYER_KEYS.forEach(L => { for (const id in s.layers[L].up) out.push(UP[id]); });
+        MILESTONES.forEach(m => { if (m.reached(s)) out.push(...m.grants); });
         game._cache = out;
         return out;
       },
 
       // Effekt eines Upgrades (Decimal) inkl. aller Modifikatoren anderer gekaufter Upgrades.
       effect(id) {
-        const u = UP[id];
+        const u = UP[id] || MS[id];
         if (!u.effect) return null;
         let v = D(u.effect(game));
         for (const m of game.bought()) {
@@ -133,6 +143,7 @@
         return m;
       },
 
+      milestoneReached(id) { const m = MILESTONES.find(x => x.id === id); return !!(m && m.reached(s)); },
       hasKind(kind) { return game.bought().some(u => u.kind === kind); },
 
       pointRate() {
@@ -297,6 +308,7 @@
 
   AP.Decimal = Decimal;
   AP.D = D;
+  AP.MILESTONES = MILESTONES;
   AP.createGame = createGame;
   AP.LAYERS = LAYERS;
   AP.OFFLINE_MAX = 8 * 3600; // höchstens 8 h Abwesenheit werden angerechnet
