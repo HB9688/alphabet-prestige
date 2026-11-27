@@ -3,10 +3,9 @@
 // Versionsschema 0.MINOR.PATCH: MINOR = größere Änderung mit Eintrag in AP.CHANGELOG,
 // PATCH = kleine Änderung/Fix ohne Eintrag. Bei jedem Merge auf main AP.VERSION erhöhen.
 (function (AP) {
-  AP.VERSION = '0.5.1';
+  AP.VERSION = '0.5.2';
   AP.AUTHOR = 'HB9688';
   AP.COPYRIGHT_YEAR = 2026;
-  AP.REPO_URL = 'https://github.com/HB9688/alphabet-prestige';
 
   // Neueste zuerst; nur größere Versionen, kurz gehalten.
   AP.CHANGELOG = [
