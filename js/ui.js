@@ -346,7 +346,6 @@
     $('infoBody').innerHTML =
       '<p class="credits">' + esc(t('credits', { a: '\u0000' })).replace('\u0000', '<strong>' + esc(AP.AUTHOR) + '</strong>') + '</p>' +
       '<p class="sub copyright">' + esc(t('copyright', { y: AP.COPYRIGHT_YEAR, a: AP.AUTHOR })) + '</p>' +
-      '<p class="sub"><a href="' + AP.REPO_URL + '" target="_blank" rel="noopener">' + esc(t('source')) + '</a></p>' +
       '<div class="version">' + esc(t('version', { v: AP.VERSION })) + '</div>' +
       '<h3>' + esc(t('changelog')) + '</h3>' +
       '<ul class="changelog">' + AP.CHANGELOG.map(c =>

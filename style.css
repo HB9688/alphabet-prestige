@@ -109,7 +109,6 @@ h1 {
 .stats .credits { margin: 10px 0 2px; font-size: 14px; }
 .stats .credits strong { color: var(--stage); }
 .stats .copyright { margin: 0 0 4px; font-size: 12px; }
-.stats a { color: var(--stage); }
 .stats .version { margin-top: 10px; font-size: 18px; font-weight: 700; }
 
 /* Oben rechts: Info, Hilfe und Sprachumschalter */
