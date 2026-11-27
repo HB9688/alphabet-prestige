@@ -14,7 +14,7 @@
     A: { source: null, req: D(10), exp: 0.5 },
     B: { source: 'A', req: D(5.1e15), exp: 0.25 },
     C: { source: 'B', req: D(1.5e9), exp: 0.25 },
-    D: { source: 'C', req: D(1e9), exp: 0.25 } // req per tools/tune.html
+    D: { source: 'C', req: D(1e7), exp: 0.25 } // bewusst niedrig: der erste D-Reset setzt A–C komplett zurück
   };
 
   function defaultState() {

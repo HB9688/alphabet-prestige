@@ -33,8 +33,10 @@ const interval = { A: i => 10 + 9.5 * i, B: i => 60 + 8 * i, C: i => 60 + 8 * i,
 const resetInterval = { B: 150, C: 150, D: 960 };
 const steps = [];
 if (tuneA) AP.UPGRADE_ORDER.A.forEach((id, i) => { if (i >= 2) steps.push({ key: id, kind: 'cost', id, interval: interval.A(i) }); });
+// ?fixreq=D: req dieser Stufen nicht suchen, sondern den Wert aus game.js behalten (nur Kosten einstellen)
+const fixReq = (params.get('fixreq') || '').toUpperCase();
 layers.forEach(L => {
-  steps.push({ key: 'reset:' + L, kind: 'req', layer: L, interval: resetInterval[L] || 600 });
+  if (!fixReq.includes(L)) steps.push({ key: 'reset:' + L, kind: 'req', layer: L, interval: resetInterval[L] || 600 });
   AP.UPGRADE_ORDER[L].forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: (interval[L] || interval.D)(i) }));
 });
 
@@ -50,6 +52,7 @@ const DT = fast ? 0.5 : 1;
 const startRun = AP.simulate({ stopAt: gate, snapshotAt: fast ? gate : null, dt: DT, maxTime: 12 * 3600 });
 const snap = fast ? startRun.snapshot : null;
 let prevT = startRun.bought[gate];
+if (fixReq.includes(layers[0])) { prevT = AP.simulate({ stopAt: 'reset:' + layers[0], dt: DT, from: snap, maxTime: 12 * 3600 }).firstReset[layers[0]]; }
 let prevLog = 0;
 let k = 0;
 const results = [];
