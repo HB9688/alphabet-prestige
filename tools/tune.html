@@ -28,6 +28,10 @@ const round2 = l => { const e = Math.floor(l); let m = Math.round(Math.pow(10, l
 // (schnell, A–C bleiben unverändert). Allgemein: ?layers=DE usw. stellt diese Stufen ab dem Tor davor ein.
 const params = new URLSearchParams(location.search);
 const tuneA = params.has('all');
+// ?style=hb: mit dem Spielstil des Nutzers rechnen (siehe simcore.js); Standard bleibt das alte Modell 'double'
+const STYLE = params.get('style') || 'double';
+const simBase = AP.simulate;
+AP.simulate = o => simBase(Object.assign({ style: STYLE }, o));
 const layers = (params.get('layers') || 'BC').toUpperCase().split('');
 const interval = { A: i => 10 + 9.5 * i, B: i => 60 + 8 * i, C: i => 60 + 8 * i, D: i => 60 + 10 * i };
 const resetInterval = { B: 150, C: 150, D: 960 };
@@ -64,13 +68,13 @@ const startRun = AP.simulate({ stopAt: gate, snapshotAt: fast ? gate : null, dt:
 if (fast && reqKeep && fixReq.includes(first)) AP.LAYERS[first].req = reqKeep;
 const snap = fast ? startRun.snapshot : null;
 let prevT = startRun.bought[gate];
+let prevLog = 0;
 if (fixReq.includes(layers[0])) { prevT = AP.simulate({ stopAt: 'reset:' + layers[0], dt: DT, from: snap, maxTime: 12 * 3600 }).firstReset[layers[0]]; }
 if (fromId) { // Start: Kauf des Upgrades vor fromId (mit den bestehenden Kosten)
   const prevId = AP.UPGRADE_ORDER[fromId[0]][AP.UPGRADE_ORDER[fromId[0]].indexOf(fromId) - 1];
   prevT = AP.simulate({ stopAt: prevId, dt: DT, from: snap, maxTime: 14 * 3600 }).bought[prevId];
   const pc = AP.UPGRADES[prevId].cost; prevLog = Dec.max(pc, 1).log10();
 }
-let prevLog = 0;
 let k = 0;
 const results = [];
 function stepOnce() {

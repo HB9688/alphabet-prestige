@@ -70,23 +70,24 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 ## Balance
 
-Zielzeiten für einen aktiven Spieler (vom Nutzer vorgegeben: ~1 h bis zur ersten B-Prestige):
+**Die alten Zielzeiten (AZ ~1 h, BZ ~4 h, CZ ~6 h, DZ ~8,3 h) sind überholt** – sie galten für das alte Simulationsmodell „Verdopplung“. Der Nutzer hat 0.8.1 am Handy komplett durchgespielt und war 2–4× schneller. Neue Zielzeiten legt der Nutzer noch fest.
 
-| Meilenstein | Ziel | aktuell (Simulation) |
-|---|---|---|
-| erster A-Reset | ~10 s | 0:10 |
-| AZ / erster B-Reset | ~55–60 min | 54 / 56 min |
-| BZ | ~4 h (vom Nutzer so akzeptiert, B bewusst nicht gestrafft) | 4:02 h |
-| CZ | ~6 h | 5:44 h |
-| erster D-Reset / DZ | ~8,3 h (D ≈ 2,5 h) | 5:44 / 8:17 h – Wartezeiten vor DB/DC je 21 min, ab DL je ~4 min |
+**Spielstil des Nutzers** (Grundlage der Simulation, `style: 'hb'`): vor einem Reset erst die Stufen darunter von unten nach oben resetten (Kettenreset, solange sie noch keine 100 % passiv erzeugen); sehr viele Resets; eine neue Stufe erst resetten, wenn der Gewinn für die ersten 2–3 Upgrades reicht (gilt für den Anfang einer Stufe); kaum offline.
 
-Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
+| Meilenstein | Nutzer (0.8.1, Handy) | Modell `hb` | altes Modell `double` |
+|---|---|---|---|
+| AZ / erster B-Reset | 26 / 28 min | 25 / 31 min | 54 / 56 min |
+| BZ / erster C-Reset | 1:26 / 1:28 h | 1:26 / 1:40 h | 4:02 / 4:10 h |
+| CZ / erster D-Reset | 1:52 / 1:53 h | 2:40 / 2:42 h | 5:44 / 5:44 h |
+| DZ | 2:11 h (D nur 18 min) | 5:08 h | 8:17 h |
+
+A und B trifft das Modell gut; **in C/D ist der echte Spieler noch ~1,5–2× schneller** als das Modell (Ursache offen). Auffällig: am Stufenanfang einzelne lange Wartezeiten (CC/CD je ~10 min, DC ~15 min), gegen Ende jeder Stufe zu flache Kosten (in D reichte dem Nutzer ein Reset mit +5,5e10 D für alle späten Upgrades, DZ kostet 1,4e10).
 
 **Workflow nach Änderungen an Effekten oder Kosten:**
 1. Im Projektordner einen Server starten: `py -m http.server 8123`
-2. `http://localhost:8123/tools/sim.html` → Zeiten prüfen.
-3. Bei Abweichungen `tools/tune.html` öffnen (stellt B und C neu ein; `?all` stellt auch A neu ein; `?layers=D` nur Stufe D – rechnet ab einem Snapshot bei CZ, A–C bleiben unberührt; `&fixreq=D` behält `req`, `&fromid=DL&int=100,6` stellt nur ab DL ein). Dauert einige Minuten bis zu einer halben Stunde. Schneller (~30 s) für spätere Upgrades einer Stufe: schrittweise von Upgrade zu Upgrade mit `AP.simulate({ from: snapshot, snapshotAt })` rechnen. Ergebnis (`window.tuneResult`) in `COSTS` und `LAYERS[..].req` übernehmen, dann erneut `sim.html`.
-4. Die Simulation (`tools/simcore.js`) bildet den „aktiven Spieler“ ab: kauft sofort, resettet bei Verdopplung oder wenn das nächste Upgrade dadurch bezahlbar wird, min. 2 s zwischen manuellen Resets.
+2. `http://localhost:8123/tools/sim.html` → Zeiten prüfen. Zeigt Zusammenfassung, eine Tabelle je Stufe (Abstand zwischen den Käufen, ◀ = über 5 min, Anzahl Resets) und den Verlauf. Standard ist `style=hb`; `?style=double` zeigt das alte Modell; Modell-Parameter per URL: `?rA=0.1&rH=0.25&gap=2&firstAhead=2`.
+3. Bei Abweichungen `tools/tune.html` öffnen (**immer mit `?style=hb`**, sonst rechnet es mit dem alten Modell; stellt B und C neu ein; `?all` stellt auch A neu ein; `?layers=D` nur Stufe D – rechnet ab einem Snapshot bei CZ, A–C bleiben unberührt; `&fixreq=D` behält `req`, `&fromid=DL&int=100,6` stellt nur ab DL ein). Dauert einige Minuten bis zu einer halben Stunde. Schneller (~30 s) für spätere Upgrades einer Stufe: schrittweise von Upgrade zu Upgrade mit `AP.simulate({ from: snapshot, snapshotAt })` rechnen. Ergebnis (`window.tuneResult`) in `COSTS` und `LAYERS[..].req` übernehmen, dann erneut `sim.html`.
+4. Die Simulation (`tools/simcore.js`) kennt zwei Spielstile: **`hb`** (Nutzer): kauft sofort; Kettenreset (Stufen darunter zuerst, solange nicht 100 % passiv); A ab Gewinn ≥ 10 % des Bestands (`rA`), höhere Stufen ab ≥ 25 % (`rH`) oder wenn das nächste Upgrade dadurch bezahlbar wird; erster Reset einer Stufe erst, wenn er die ersten 2 Upgrades bezahlt (`firstAhead`); min. 2 s zwischen Resets einer Stufe (`gap`). **`double`** (alt): jede Stufe einzeln bei Verdopplung, höchste zuerst, min. 2 s.
 
 ## Testen
 

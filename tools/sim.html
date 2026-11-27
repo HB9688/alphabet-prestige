@@ -8,7 +8,8 @@
 </head>
 <body>
 <h1>Alphabet Prestige – Balance-Simulation</h1>
-<p>Simuliert einen aktiven Spieler (kauft sofort, resettet bei Verdopplung oder wenn das nächste Upgrade dadurch bezahlbar wird, min. 2 s zwischen manuellen Resets).</p>
+<p>Standard: Spielstil des Nutzers (<code>hb</code>: Kettenreset der Stufen darunter, viele Resets, neue Stufe erst ab 2 Upgrades).
+<code>?style=double</code>: altes Modell (jede Stufe einzeln bei Verdopplung). Parameter z. B. <code>?rA=0.1&amp;rH=0.25&amp;gap=2&amp;firstAhead=2</code>.</p>
 <pre id="out">läuft …</pre>
 <script src="../js/lib/break_infinity.min.js"></script>
 <script src="../js/palette.js"></script>
@@ -16,16 +17,37 @@
 <script src="../js/game.js"></script>
 <script src="simcore.js"></script>
 <script>
-const r = AP.simulate({ log: true, dt: 0.5, maxTime: 12 * 3600 });
+const q = new URLSearchParams(location.search);
+const style = q.get('style') || 'hb';
+const params = {};
+['rA', 'rH', 'gap', 'firstAhead'].forEach(k => { if (q.has(k)) params[k] = Number(q.get(k)); });
+const r = AP.simulate({ log: true, dt: 0.5, maxTime: 12 * 3600, style, params });
 const t = v => v === undefined ? '–' : AP.fmtT(v);
-const sum = ['ZUSAMMENFASSUNG'];
+const min = v => (v / 60).toFixed(1).padStart(5) + ' min';
+const sum = ['ZUSAMMENFASSUNG (Spielstil ' + style + (Object.keys(params).length ? ' ' + JSON.stringify(params) : '') + ')'];
 Object.keys(AP.LAYERS).forEach(L => {
   sum.push(('erster ' + L + '-Reset: ').padEnd(17) + t(r.firstReset[L]));
   sum.push((L + 'Z:').padEnd(17) + t(r.bought[L + 'Z']));
 });
 sum.push('Punkte am Ende: ' + r.points.toExponential(2), '');
-document.getElementById('out').textContent = sum.concat(r.log).join('\n');
-window.simResult = { summary: sum.join('\n'), log: r.log };
+// Tabelle: Abstand zwischen den Käufen je Stufe, lange Wartezeiten (> 5 min) markiert
+const tab = ['UPGRADES JE STUFE (Abstand zum vorigen Kauf, ◀ = über 5 min)'];
+Object.keys(AP.LAYERS).forEach(L => {
+  const ord = AP.UPGRADE_ORDER[L];
+  if (!(ord[0] in r.bought)) return;
+  const start = L === 'A' ? 0 : r.bought[AP.LETTERS[AP.LETTERS.indexOf(L) - 1] + 'Z'];
+  const end = r.bought[L + 'Z'];
+  tab.push('', 'Stufe ' + L + ': ' + t(start) + ' → ' + t(end) + (end !== undefined ? '  (' + min(end - start).trim() + ')' : '') + ', Resets ' + (r.resets[L] || 0));
+  let prev = start;
+  ord.forEach(id => {
+    const b = r.bought[id];
+    if (b === undefined) return;
+    const d = b - prev; prev = b;
+    tab.push('  ' + id + '  ' + t(b).padStart(7) + '  +' + min(d) + (d > 300 ? '  ◀' : '') + '   ' + AP.UPGRADES[id].name);
+  });
+});
+document.getElementById('out').textContent = sum.concat(tab, ['', 'VERLAUF'], r.log).join('\n');
+window.simResult = { summary: sum.join('\n'), table: tab.join('\n'), log: r.log, resets: r.resets };
 </script>
 </body>
 </html>
