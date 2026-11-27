@@ -55,6 +55,7 @@
     $('gearBtn').title = t('settings');
     $('statsBtn').setAttribute('aria-label', t('stats'));
     $('statsBtn').title = t('stats');
+    applyPause();
     $('statsClose').setAttribute('aria-label', t('close'));
     statsKey = '';
     tabsKey = '';
@@ -314,6 +315,22 @@
     if (!game.LAYERS[L] || !game.isUnlocked(L)) return;
     e.preventDefault();
     if (game.reset(L)) render();
+  });
+
+  // ---------- Pause ----------
+  function applyPause() {
+    const p = !!game.state.paused;
+    document.body.classList.toggle('is-paused', p);
+    $('pausedInfo').hidden = !p;
+    $('pauseBtn').setAttribute('aria-pressed', p);
+    $('pauseBtn').title = t(p ? 'resume' : 'pause');
+    $('pauseBtn').setAttribute('aria-label', t(p ? 'resume' : 'pause'));
+  }
+  $('pauseBtn').addEventListener('click', () => {
+    game.state.paused = !game.state.paused;
+    applyPause();
+    game.save();
+    render();
   });
 
   // ---------- Statistik ----------

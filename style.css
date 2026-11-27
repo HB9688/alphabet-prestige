@@ -67,6 +67,9 @@ h1 {
   background: transparent; color: var(--muted); cursor: pointer;
 }
 .gear svg { width: 17px; height: 17px; }
+#pauseBtn .ico-play, #pauseBtn[aria-pressed="true"] .ico-pause { display: none; }
+#pauseBtn[aria-pressed="true"] .ico-play { display: block; }
+.gear[aria-pressed="true"],
 .gear[aria-expanded="true"], .gear:hover { color: var(--stage); background: var(--stage-soft); }
 .menu { display: flex; margin: 30px 0 8px; text-align: left; } /* Desktop: unter den Icons, schiebt die Überschrift nach unten */
 .menu[hidden] { display: none; }
@@ -189,6 +192,10 @@ h1 {
   overflow-y: auto;
   min-height: 0;
 }
+
+/* Pause: Spielfeld gedimmt */
+.is-paused #stage { opacity: .55; }
+.sub.paused-info { color: var(--stage); font-weight: 600; }
 
 #panel { order: 2; }
 .upcard { order: 1; }
