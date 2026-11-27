@@ -14,7 +14,7 @@
     A: { source: null, req: D(10), exp: 0.5 },
     B: { source: 'A', req: D(5.1e15), exp: 0.25 },
     C: { source: 'B', req: D(1.5e9), exp: 0.25 },
-    D: { source: 'C', req: D(1e7), exp: 0.25 } // bewusst niedrig: der erste D-Reset setzt A–C komplett zurück
+    D: { source: 'C', req: D(1e9), exp: 0.25 } // 1e9: wer nach CZ wartet, bekommt ~5 D statt 17 (Nutzer-Feedback)
   };
 
   // Meilensteine: dauerhafte Boni, sobald eine Bedingung erreicht ist (überstehen jeden Reset).

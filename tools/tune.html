@@ -35,7 +35,15 @@ const steps = [];
 if (tuneA) AP.UPGRADE_ORDER.A.forEach((id, i) => { if (i >= 2) steps.push({ key: id, kind: 'cost', id, interval: interval.A(i) }); });
 // ?fixreq=D: req dieser Stufen nicht suchen, sondern den Wert aus game.js behalten (nur Kosten einstellen)
 const fixReq = (params.get('fixreq') || '').toUpperCase();
+// ?fromid=DL: Kosten vor diesem Upgrade behalten, nur ab hier einstellen; ?int=100,6: Abstand in s = a + b·(Schritt)
+const fromId = (params.get('fromid') || '').toUpperCase();
+const customInt = params.get('int') ? params.get('int').split(',').map(Number) : null;
 layers.forEach(L => {
+  if (fromId && fromId[0] === L) {
+    const k0 = AP.UPGRADE_ORDER[L].indexOf(fromId);
+    AP.UPGRADE_ORDER[L].forEach((id, i) => { if (i >= k0) steps.push({ key: id, kind: 'cost', id, interval: customInt ? customInt[0] + customInt[1] * (i - k0) : (interval[L] || interval.D)(i) }); });
+    return;
+  }
   if (!fixReq.includes(L)) steps.push({ key: 'reset:' + L, kind: 'req', layer: L, interval: resetInterval[L] || 600 });
   AP.UPGRADE_ORDER[L].forEach((id, i) => steps.push({ key: id, kind: 'cost', id, interval: (interval[L] || interval.D)(i) }));
 });
@@ -49,10 +57,19 @@ const first = tuneA ? 'A' : layers[0];
 const gate = first === 'A' ? 'AB' : AP.LETTERS[AP.LETTERS.indexOf(first) - 1] + 'Z';
 const fast = !tuneA && first >= 'D';
 const DT = fast ? 0.5 : 1;
+// beim Snapshot darf die zu tunende Stufe noch nicht resetten (sonst steckt der erste Reset schon im Snapshot)
+const reqKeep = AP.LAYERS[first] ? AP.LAYERS[first].req : null;
+if (fast && reqKeep) AP.LAYERS[first].req = LOCK;
 const startRun = AP.simulate({ stopAt: gate, snapshotAt: fast ? gate : null, dt: DT, maxTime: 12 * 3600 });
+if (fast && reqKeep && fixReq.includes(first)) AP.LAYERS[first].req = reqKeep;
 const snap = fast ? startRun.snapshot : null;
 let prevT = startRun.bought[gate];
 if (fixReq.includes(layers[0])) { prevT = AP.simulate({ stopAt: 'reset:' + layers[0], dt: DT, from: snap, maxTime: 12 * 3600 }).firstReset[layers[0]]; }
+if (fromId) { // Start: Kauf des Upgrades vor fromId (mit den bestehenden Kosten)
+  const prevId = AP.UPGRADE_ORDER[fromId[0]][AP.UPGRADE_ORDER[fromId[0]].indexOf(fromId) - 1];
+  prevT = AP.simulate({ stopAt: prevId, dt: DT, from: snap, maxTime: 14 * 3600 }).bought[prevId];
+  const pc = AP.UPGRADES[prevId].cost; prevLog = Dec.max(pc, 1).log10();
+}
 let prevLog = 0;
 let k = 0;
 const results = [];
