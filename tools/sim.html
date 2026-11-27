@@ -10,21 +10,20 @@
 <h1>Alphabet Prestige – Balance-Simulation</h1>
 <p>Simuliert einen aktiven Spieler (kauft sofort, resettet bei Verdopplung oder wenn das nächste Upgrade dadurch bezahlbar wird, min. 2 s zwischen manuellen Resets).</p>
 <pre id="out">läuft …</pre>
+<script src="../js/lib/break_infinity.min.js"></script>
 <script src="../js/palette.js"></script>
 <script src="../js/upgrades.js"></script>
 <script src="../js/game.js"></script>
 <script src="simcore.js"></script>
 <script>
-const r = AP.simulate({ log: true, dt: 0.5 });
+const r = AP.simulate({ log: true, dt: 0.5, maxTime: 12 * 3600 });
 const t = v => v === undefined ? '–' : AP.fmtT(v);
-const sum = ['ZUSAMMENFASSUNG',
-  'erster A-Reset: ' + t(r.firstReset.A),
-  'AZ:             ' + t(r.bought.AZ),
-  'erster B-Reset: ' + t(r.firstReset.B),
-  'BZ:             ' + t(r.bought.BZ),
-  'erster C-Reset: ' + t(r.firstReset.C),
-  'CZ:             ' + t(r.bought.CZ),
-  'Punkte am Ende: ' + r.points.toExponential(2), ''];
+const sum = ['ZUSAMMENFASSUNG'];
+Object.keys(AP.LAYERS).forEach(L => {
+  sum.push(('erster ' + L + '-Reset: ').padEnd(17) + t(r.firstReset[L]));
+  sum.push((L + 'Z:').padEnd(17) + t(r.bought[L + 'Z']));
+});
+sum.push('Punkte am Ende: ' + r.points.toExponential(2), '');
 document.getElementById('out').textContent = sum.concat(r.log).join('\n');
 window.simResult = { summary: sum.join('\n'), log: r.log };
 </script>

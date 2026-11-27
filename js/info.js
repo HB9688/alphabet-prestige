@@ -3,12 +3,18 @@
 // Versionsschema 0.MINOR.PATCH: MINOR = größere Änderung mit Eintrag in AP.CHANGELOG,
 // PATCH = kleine Änderung/Fix ohne Eintrag. Bei jedem Merge auf main AP.VERSION erhöhen.
 (function (AP) {
-  AP.VERSION = '0.6.0';
+  AP.VERSION = '0.8.0';
   AP.AUTHOR = 'HB9688';
   AP.COPYRIGHT_YEAR = 2026;
 
   // Neueste zuerst; nur größere Versionen, kurz gehalten.
   AP.CHANGELOG = [
+    { v: '0.8.0', date: '2026-11-27',
+      en: 'New prestige layer D with 26 upgrades and a first milestone',
+      de: 'Neue Prestigestufe D mit 26 Upgrades und erstem Meilenstein' },
+    { v: '0.7.0', date: '2026-11-27',
+      en: 'Internal: support for very large numbers (preparation for new layers)',
+      de: 'Intern: Unterstützung sehr großer Zahlen (Vorbereitung für neue Stufen)' },
     { v: '0.6.0', date: '2026-11-27',
       en: 'Offline progress (up to 8 h) with a welcome-back summary',
       de: 'Offline-Fortschritt (bis 8 h) mit Willkommen-zurück-Übersicht' },
@@ -48,6 +54,7 @@
         'Auto buy can be switched off in the header of the upgrade list.',
         'The game saves automatically every 10 s – use Export in the settings menu for a backup.',
         'Pause stops everything, including the play time in the statistics.',
+        'Milestones (e.g. your first D reset) give permanent bonuses that survive every reset.',
         'Up to 8 h of absence are counted when you come back (not while paused).'
       ] }
     ],
@@ -68,6 +75,7 @@
         'Auto-Kauf lässt sich im Kopf der Upgrade-Liste abschalten.',
         'Der Spielstand speichert alle 10 s automatisch – mit Export im Zahnrad-Menü sicherst du ihn.',
         'Pause hält alles an, auch die Spielzeit in der Statistik.',
+        'Meilensteine (z. B. dein erster D-Reset) geben dauerhafte Boni, die jeden Reset überstehen.',
         'Bis zu 8 h Abwesenheit werden beim Zurückkommen angerechnet (nicht während der Pause).'
       ] }
     ]

@@ -1,20 +1,20 @@
 # CLAUDE.md – Alphabet Prestige
 
-Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit je 26 Upgrades. Aktuell spielbar: **A bis C**. Der Nutzer schreibt Deutsch – antworte auf Deutsch.
+Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit je 26 Upgrades. Aktuell spielbar: **A bis D**. Der Nutzer schreibt Deutsch – antworte auf Deutsch.
 
 ## Technik – feste Regeln
 
 - **Kein Build, keine Abhängigkeiten, keine ES-Module, kein `fetch`.** Das Spiel muss per Doppelklick auf `index.html` (file://) laufen. Alle Skripte sind klassische `<script>`-Dateien und hängen an den globalen Namensraum `globalThis.AP`.
-- Ladereihenfolge in `index.html`: `palette.js` → `i18n.js` → `info.js` → `upgrades.js` → `game.js` → `ui.js`.
+- Ladereihenfolge in `index.html`: `lib/break_infinity.min.js` → `palette.js` → `i18n.js` → `info.js` → `upgrades.js` → `game.js` → `ui.js` (Tools: Bibliothek ebenfalls zuerst).
 - `game.js` enthält nur Logik ohne DOM, damit die Balance-Tools in `tools/` sie wiederverwenden können. DOM-Code gehört nach `ui.js`.
-- Zahlen sind JS-`Number` (bis ~1e308). Wird das für spätere Stufen zu knapp, auf eine Big-Number-Bibliothek umstellen (z.B. break_infinity.js als lokale Datei, nicht per CDN).
+- **Große Zahlen:** Punkte, Stufenpunkte, Gewinne, Kosten, `req` und Upgrade-Effekte sind `Decimal` aus **break_infinity.js** (`js/lib/`, MIT, unverändert, Lizenzkopf in der Datei). **Nie** mit `< > + - * /` verrechnen (`valueOf` liefert Text!) – immer `.lt/.gte/.add/.mul/.pow/.log10()` bzw. `AP.D(x)`. `.log10()` liefert eine normale Zahl. Zeiten, Zähler, Anteile (`passive`, `keep`) bleiben `Number`. Gespeichert wird Decimal als Text; `merge()` wandelt beim Laden zurück (alte Spielstände mit Zahlen funktionieren). Kosten in `COSTS` als Zahl oder Text (`'1.2e400'`). `game.normalize()` wandelt versehentlich gesetzte Zahlen (z. B. aus der Konsole) um.
 - **Spielstände nicht kaputt machen:** gespeichert wird in `localStorage` unter `alphabetPrestige.save.v1`. Neue State-Felder in `defaultState()` ergänzen – `merge()` füllt sie bei alten Spielständen auf. Upgrade-IDs nie umbenennen oder umsortieren, ohne eine Migration einzubauen.
 
 ## Deployment
 
 - Repository: `HB9688/alphabet-prestige` (öffentlich). **GitHub Pages** veröffentlicht `main` (Wurzelverzeichnis) unter https://hb9688.github.io/alphabet-prestige/.
 - Alles, was auf `main` landet, ist ~1 Minute später live. Vor dem Merge auf `main` im Browser testen.
-- **Lizenz:** alle Rechte vorbehalten (`LICENSE`, © 2026 HB9688). Keine Open-Source-Lizenz hinzufügen, keinen fremden Code und keine Assets mit unklarer Lizenz einbauen. Neue Dateien bekommen den Kopfkommentar `© 2026 HB9688 – All rights reserved. See LICENSE.`
+- **Lizenz:** alle Rechte vorbehalten (`LICENSE`, © 2026 HB9688). Keine Open-Source-Lizenz hinzufügen, keinen fremden Code und keine Assets mit unklarer Lizenz einbauen. Einzige Fremdkomponente: `js/lib/break_infinity.min.js` (MIT, © 2019 Timothy Stiles) – in `LICENSE` vermerkt. Neue Dateien bekommen den Kopfkommentar `© 2026 HB9688 – All rights reserved. See LICENSE.`
 - **Cache:** GitHub Pages lässt Browser Dateien ~10 min zwischenspeichern. Neues `index.html` mit altem `ui.js` aus dem Cache bricht das Spiel (keine Tabs/Upgrades). Deshalb hängen CSS und Skripte in `index.html` mit `?v=N` an – **bei jeder Änderung an CSS/JS die Zahl überall um 1 erhöhen.**
 
 ## Versionen
@@ -39,7 +39,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 - **Auto-Kauf:** Häkchen „Auto-Kauf“ im Kopf der Upgrade-Liste zwischen „X-Upgrades“ und „n / 26 gekauft“ (sobald freigeschaltet). Ein Feld „Automatisierung“ gibt es nicht mehr.
 - **Passive Erzeugung:** Sobald eine Stufe passiv erzeugt (`passive:X`), steht unter ihren Punkten „+x A /s“; „Nächster Reset“ mit Balken entfällt, der Prestige-Knopf bleibt.
 - **Reset-Anzeige:** Unter dem Balken steht der Bedarf für den nächsten Punkt (ab Gewinn 100 feste Zielstufen 100 → 200 → 500 …). Ist die nächsthöhere Stufe frei **und** das Freischalt-Upgrade (xZ) dieses Durchgangs gekauft oder bezahlbar, steht dort stattdessen der Bedarf für deren nächsten Punkt.
-- **Reset-Knöpfe:** Sind alle Upgrades der Stufe darunter gekauft und lohnt sich ein manueller Reset dort (ohne passive Erzeugung immer, mit passiver Erzeugung solange der Gewinn ≥ ihr Bestand ist), steht neben dem Prestige-Knopf (2/3 Breite) ein kleiner Reset-Knopf für diese Stufe (1/3), z. B. auf Tab B „+1,2e16 A“.
+- **Reset-Knöpfe:** Auf jedem Tab mit einer Stufe darunter stehen **immer** zwei Knöpfe: Prestige der aktuellen Stufe (2/3) und Reset der Stufe darunter (1/3, z. B. „+1,2e16 A“, ausgegraut wenn kein Gewinn möglich). Auf Tab A nur der Prestige-Knopf. Vom Nutzer gewünscht: kein Springen zwischen einem und zwei Knöpfen. Passt der Text mit Gewinn nicht in den Knopf (sehr große Zahlen), steht nur „A-Prestige“ da; der Gewinn steht dann im Tooltip (`fitText()` in `ui.js`, entscheidet nach Textmuster und Knopfbreite).
 - **Tastenkürzel:** Buchstabe einer freigeschalteten Stufe (A, B, C …) löst deren Prestige-Reset aus, unabhängig vom aktiven Tab (nicht in Eingabefeldern, nicht mit Strg/Alt/Cmd, kein Dauerfeuer beim Gedrückthalten). Hinweis im Tooltip der Prestige-Knöpfe.
 - **Sprache:** **Englisch ist Primärsprache** (Standard für neue Spieler, Fallback in `AP.t()`), Deutsch zweite Sprache. Umschalter **EN | DE** oben rechts. Bestehende Spielstände behalten ihre gespeicherte Sprache. **Jeder neue sichtbare Text braucht beide Sprachen** – UI-Texte in `AP.STRINGS` (`js/i18n.js`), englische Upgrade-Texte in `AP.UPGRADE_EN` (gleiche Reihenfolge wie in `upgrades.js`); statische Texte in `index.html` auf Englisch.
 
@@ -56,8 +56,11 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 - AA ist kostenlos und erzeugt 1 Punkt/s. A-Reset ab 10 Punkten: Gewinn `floor((Quelle/req)^exp × Multiplikatoren)`.
 - Ein Reset der Stufe X setzt Punkte und alle niedrigeren Stufen (Punkte und Upgrades) zurück; `keep:`-Upgrades behalten die ersten N Upgrades.
+- **Meilensteine** (`MILESTONES` in `game.js`): dauerhafte Boni ab einer Bedingung, überstehen jeden Reset; wirken als Pseudo-Upgrades in `bought()` mit normalen Effekt-Arten. Bisher **D1**: ab dem ersten D-Reset Auto-Kauf A und 1 % A-Erzeugung (wie BG und CD, vom Nutzer gewünscht, damit das Neuspielen von A–C nach dem ersten D-Reset nicht zäh wird). Anzeige als **★-Eintrag oben in der Upgrade-Liste** der Stufe (gleiches Kachel-Design, gestrichelt solange offen, „✓ erreicht“ wie ein gekauftes Upgrade); die Liste heißt dann „X-Upgrades & Meilensteine“ (vom Nutzer so gewünscht, spart Platz am Handy). Texte `ms<ID>Name`/`ms<ID>Desc`, `msDone`/`msOpen`, `upgradesMs` in `AP.STRINGS`. „n / 26 gekauft“ zählt nur Upgrades.
+- **Stufe D – Balance-Entscheidungen des Nutzers:** Mindestmenge `req` 1e9 C (bei 1e7 bekam man nach etwas Warten ~17 D und kaufte DA–DK auf einmal – „zu schnell“); DA–DK kosten steigend 1,1,1,1,2,2,2,3,3,4,5 (von Hand), DL–DZ getunt. Wer nach CZ 15 min wartet, bekommt ~5 D und kauft damit 4 Upgrades. DL–DZ je ~4 min (Nutzer: Ende war mit 2–3 min zu schnell); DN nur ×3 statt ×10, sonst explodiert die passive C-Erzeugung am Ende von D.
+- **Neue Stufe hinzufügen:** Buchstabe in `LAYER_KEYS` und `LAYERS` (`game.js`), Liste + `COSTS` in `upgrades.js`, englische Texte in `AP.UPGRADE_EN`, Torschalter `xZ` der Vorstufe ohne „(folgt bald)“. Alles andere (Tabs, Statistik, Tastenkürzel, passive Erzeugung, Auto-Kauf, „Stufe X folgt bald“ über `state.tease`) läuft über `LAYER_KEYS`.
 - **Offline-Fortschritt:** Beim Öffnen und nach langen Lücken (Hintergrund-Tab, > 60 s) rechnet `game.catchUp()` die verpasste Zeit nach – höchstens 8 h (`AP.OFFLINE_MAX`), nicht während der Pause, ohne Resets (nur Erzeugung, passive Gewinne, Auto-Kauf). `lastSeen` wird bei jedem `save()` gesetzt; gespeichert wird alle 10 s sowie bei `visibilitychange`/`pagehide`/`beforeunload`. Danach erscheint das Fenster „Welcome back“ mit den Zuwächsen.
-- Verlauf der Automatisierung: zuerst Auto-Kauf (BG, CI), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B), dann 10 %/s (CF, CO), dann ×10 (CJ, CT). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
+- Verlauf der Automatisierung: zuerst Auto-Kauf (BG für A – ab dem ersten D-Reset dauerhaft per Meilenstein D1 –, CI für B, DF für C), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B, DD für C), dann 10 %/s (CF, CO, DH), dann ×10 (CJ, CT) bzw. ×3 (DN → C 30 %/s). Upgrades behalten: BC/BK (A), CC/CK (B), DC/DJ (C). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
 
 ## Balance
 
@@ -69,17 +72,19 @@ Zielzeiten für einen aktiven Spieler (vom Nutzer vorgegeben: ~1 h bis zur erste
 | AZ / erster B-Reset | ~55–60 min | 54 / 56 min |
 | BZ | ~4 h (vom Nutzer so akzeptiert, B bewusst nicht gestrafft) | 4:02 h |
 | CZ | ~6 h | 5:44 h |
+| erster D-Reset / DZ | ~8,3 h (D ≈ 2,5 h) | 5:44 / 8:17 h – Wartezeiten vor DB/DC je 21 min, ab DL je ~4 min |
 
 Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.
 
 **Workflow nach Änderungen an Effekten oder Kosten:**
 1. Im Projektordner einen Server starten: `py -m http.server 8123`
 2. `http://localhost:8123/tools/sim.html` → Zeiten prüfen.
-3. Bei Abweichungen `tools/tune.html` öffnen (stellt B und C neu ein; `?all` stellt auch A neu ein). Dauert einige Minuten. Ergebnis (`window.tuneResult`) in `COSTS` und `LAYERS[..].req` übernehmen, dann erneut `sim.html`.
+3. Bei Abweichungen `tools/tune.html` öffnen (stellt B und C neu ein; `?all` stellt auch A neu ein; `?layers=D` nur Stufe D – rechnet ab einem Snapshot bei CZ, A–C bleiben unberührt; `&fixreq=D` behält `req`, `&fromid=DL&int=100,6` stellt nur ab DL ein). Dauert einige Minuten bis zu einer halben Stunde. Schneller (~30 s) für spätere Upgrades einer Stufe: schrittweise von Upgrade zu Upgrade mit `AP.simulate({ from: snapshot, snapshotAt })` rechnen. Ergebnis (`window.tuneResult`) in `COSTS` und `LAYERS[..].req` übernehmen, dann erneut `sim.html`.
 4. Die Simulation (`tools/simcore.js`) bildet den „aktiven Spieler“ ab: kauft sofort, resettet bei Verdopplung oder wenn das nächste Upgrade dadurch bezahlbar wird, min. 2 s zwischen manuellen Resets.
 
 ## Testen
 
-- Im Browser öffnen; in der Konsole: `debug.unlock('C')`, `debug.add('A', 1e6)` (`'P'` für Punkte), `debug.game` für den State.
+- **`debug` gibt es nur auf Testadressen** (file://, localhost, raw.githack.com – Liste `TEST_HOSTS` in `ui.js`); auf GitHub Pages und jeder Spieleplattform (eingebettet oder hochgeladen) ist es aus. Neue Testadresse? In `TEST_HOSTS` eintragen.
+- Im Browser öffnen; in der Konsole: `debug.unlock('C')`, `debug.add('A', 1e6)` oder `debug.add('A', '1e500')` (`'P'` für Punkte), `debug.game` für den State (Werte sind Decimal: `debug.game.state.points.toString()`).
 - Test-Spielstände danach mit „Neu starten“ oder `localStorage.clear()` entfernen.
 - Desktop- und Handybreite (< 760 px) prüfen.

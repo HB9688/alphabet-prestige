@@ -261,8 +261,9 @@ h1 {
 .btn.wide { width: 100%; margin-top: 10px; padding: 9px; font-size: 15px; font-weight: 600; }
 .reset-row { display: flex; gap: 8px; margin-top: 10px; }
 .reset-row .btn.wide { margin-top: 0; min-width: 0; }
-#resetBtn { flex: 2 1 0; }
-#resetPrevBtn { flex: 1 1 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#resetBtn { flex: 2 1 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#resetPrevBtn { flex: 1 1 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; padding-left: 4px; padding-right: 4px; }
+.reset-row #resetBtn { padding-left: 6px; padding-right: 6px; }
 .btn.danger { border-color: #a33; color: #e66; }
 
 .toggle { display: block; font-size: 13px; margin-top: 8px; cursor: pointer; }
@@ -327,6 +328,11 @@ h1 {
 .up.unknown .desc, .up.unknown .name { color: var(--muted); }
 .up.unlock .name::after { content: " ★"; }
 
+/* Meilenstein als ★-Eintrag in der Upgrade-Liste: gestrichelt solange offen, wie „gekauft“ wenn erreicht */
+.up.milestone-row { border-style: dashed; }
+.up.milestone-row.bought { border-style: solid; }
+.up .ms-status { font-size: 13px; color: var(--muted); min-width: 96px; text-align: center; white-space: nowrap; }
+.up.milestone-row.bought .ms-status { color: var(--stage); opacity: .8; }
 .done-note { text-align: center; color: var(--muted); font-size: 13px; }
 .done-note:not(:empty) { padding-top: 8px; }
 
@@ -368,6 +374,7 @@ h1 {
   .up .id { grid-area: id; font-size: 16px; line-height: 28px; }
   .up .name { grid-area: name; line-height: 1.25; padding-top: 4px; hyphens: auto; overflow-wrap: break-word; }
   .up .btn { grid-area: btn; min-width: 72px; padding: 4px 8px; }
+  .up .ms-status { grid-area: btn; min-width: 72px; line-height: 28px; }
   .up .desc, .up .eff { white-space: normal; overflow: hidden; text-overflow: clip; }
   .up .desc { grid-area: desc; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
   .up .eff { grid-area: eff; }
