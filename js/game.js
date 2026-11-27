@@ -1,3 +1,4 @@
+// © 2026 HB9688 – All rights reserved. See LICENSE.
 // Spiellogik: State, Formeln, Kauf, Reset, Automatisierung, Speichern.
 (function (AP) {
   const SAVE_KEY = 'alphabetPrestige.save.v1';

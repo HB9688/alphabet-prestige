@@ -1,3 +1,4 @@
+/* © 2026 HB9688 – All rights reserved. See LICENSE. */
 :root {
   --bg-top: #0d0d0d;
   --bg-bottom: #000;
@@ -107,6 +108,7 @@ h1 {
 .stats ul.changelog li { margin: 8px 0; }
 .stats .credits { margin: 10px 0 2px; font-size: 14px; }
 .stats .credits strong { color: var(--stage); }
+.stats .copyright { margin: 0 0 4px; font-size: 12px; }
 .stats a { color: var(--stage); }
 .stats .version { margin-top: 10px; font-size: 18px; font-weight: 700; }
 

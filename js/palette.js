@@ -1,3 +1,4 @@
+// © 2026 HB9688 – All rights reserved. See LICENSE.
 // Farben aus farbverlauf.txt (Quelle). Index 0 = A, 25 = Z.
 (function (AP) {
   AP.PALETTE = [

@@ -1,3 +1,4 @@
+// © 2026 HB9688 – All rights reserved. See LICENSE.
 // Datengetriebene Upgrade-Definitionen.
 // kind:
 //   'base'      – Punkte pro Sekunde (additiv)

@@ -36,3 +36,7 @@ Die Tools brauchen einen lokalen Server (`py -m http.server`), dann `http://loca
 debug.unlock('C')      // Stufen freischalten
 debug.add('A', 1e6)    // A-Punkte hinzufügen ('P' für Punkte)
 ```
+
+## Lizenz
+
+© 2026 HB9688 – alle Rechte vorbehalten. Der Code ist öffentlich einsehbar, aber nicht Open Source; Kopieren, Verändern oder Weiterverbreiten nur mit Erlaubnis. Details siehe [LICENSE](LICENSE).
