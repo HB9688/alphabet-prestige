@@ -237,6 +237,21 @@
     positionUpgrades(L, nextIdx);
   }
 
+  // Knopftext: voller Text (mit Gewinn), solange er hineinpasst, sonst Kurzform (z. B. „A-Prestige“).
+  // Die Entscheidung hängt nur vom Textmuster und der Knopfbreite ab (zwischengespeichert) – so springt nichts hin und her.
+  const fitCache = {};
+  function fitText(el, full, short) {
+    // gemessen wird das Muster mit „0“ statt jeder Ziffer (breiteste Ziffer) – dann passt jeder echte Wert dieses Musters
+    const pattern = full.replace(/\d/g, '0');
+    const key = el.id + '|' + pattern + '|' + el.clientWidth;
+    if (!(key in fitCache)) {
+      el.textContent = pattern;
+      fitCache[key] = el.scrollWidth <= el.clientWidth;
+    }
+    const txt = fitCache[key] ? full : short;
+    if (el.textContent !== txt) el.textContent = txt;
+  }
+
   // ---------- Panel ----------
   function sourceName(L) {
     const src = game.LAYERS[L].source;
@@ -273,23 +288,24 @@
       ? t('nextAt', { n: fmt(game.nextTarget(H)), L: H, next: fmt(game.nextAt(H)), src: sourceName(H), have: fmtAmt(game.sourceAmt(H)) })
       : '';
     const btn = $('resetBtn');
-    btn.textContent = t('prestige', { L }) + (gain.gte(1) ? ' (+' + fmt(gain) + ')' : '');
-    btn.disabled = !game.canReset(L);
     const lower = AP.LETTERS.slice(0, AP.LETTERS.indexOf(L)).split('').map(x => t('resetsLower', { L: x })).join('');
-    btn.title = t('resets', { lower }) + ' – ' + t('shortcut', { k: L });
+    const gainTxt = gain.gte(1) ? ' (+' + fmt(gain) + ')' : '';
+    fitText(btn, t('prestige', { L }) + gainTxt, t('prestige', { L }));
+    btn.disabled = !game.canReset(L);
+    btn.title = t('resets', { lower }) + gainTxt + ' – ' + t('shortcut', { k: L });
 
-    // Zweiter Knopf für die Stufe darunter: alle ihre Upgrades gekauft und ein manueller Reset lohnt sich –
-    // ohne passive Erzeugung immer, mit passiver Erzeugung nur, solange der Reset ihre Punkte mindestens verdoppelt
+    // Zweiter Knopf (1/3) für die Stufe darunter: auf jedem Tab mit Vorstufe immer sichtbar (kein Springen
+    // zwischen einem und zwei Knöpfen – vom Nutzer gewünscht), aktiv sobald dort ein Reset möglich ist
     const P = game.LAYER_KEYS[game.LAYER_KEYS.indexOf(L) - 1];
     const prevBtn = $('resetPrevBtn');
-    const worth = P && (!game.hasKind('passive:' + P) || (game.gain(P).gte(1) && game.gain(P).gte(game.amt(P))));
-    prevBtn.hidden = !(P && game.count(P) === AP.UPGRADE_ORDER[P].length && worth);
-    if (!prevBtn.hidden) {
+    prevBtn.hidden = !P;
+    if (P) {
       const pg = game.gain(P);
-      prevBtn.textContent = pg.gte(1) ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P });
+      const pTxt = pg.gte(1) ? ' (+' + fmt(pg) + ')' : '';
+      fitText(prevBtn, pg.gte(1) ? '+' + fmt(pg) + ' ' + P : t('prestige', { L: P }), t('prestige', { L: P }));
       prevBtn.disabled = !game.canReset(P);
-      prevBtn.title = t('prestige', { L: P }) + ' – ' + t('shortcut', { k: P });
-      prevBtn.setAttribute('aria-label', t('prestige', { L: P }) + (pg.gte(1) ? ' (+' + fmt(pg) + ')' : ''));
+      prevBtn.title = t('prestige', { L: P }) + pTxt + ' – ' + t('shortcut', { k: P });
+      prevBtn.setAttribute('aria-label', t('prestige', { L: P }) + pTxt);
     }
 
     const canAutoBuy = game.hasKind('autobuy:' + L);

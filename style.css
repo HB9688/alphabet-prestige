@@ -261,8 +261,9 @@ h1 {
 .btn.wide { width: 100%; margin-top: 10px; padding: 9px; font-size: 15px; font-weight: 600; }
 .reset-row { display: flex; gap: 8px; margin-top: 10px; }
 .reset-row .btn.wide { margin-top: 0; min-width: 0; }
-#resetBtn { flex: 2 1 0; }
-#resetPrevBtn { flex: 1 1 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#resetBtn { flex: 2 1 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#resetPrevBtn { flex: 1 1 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; padding-left: 4px; padding-right: 4px; }
+.reset-row #resetBtn { padding-left: 6px; padding-right: 6px; }
 .btn.danger { border-color: #a33; color: #e66; }
 
 .toggle { display: block; font-size: 13px; margin-top: 8px; cursor: pointer; }
