@@ -3,7 +3,7 @@
 // Versionsschema 0.MINOR.PATCH: MINOR = größere Änderung mit Eintrag in AP.CHANGELOG,
 // PATCH = kleine Änderung/Fix ohne Eintrag. Bei jedem Merge auf main AP.VERSION erhöhen.
 (function (AP) {
-  AP.VERSION = '0.8.0';
+  AP.VERSION = '0.8.1';
   AP.AUTHOR = 'HB9688';
   AP.COPYRIGHT_YEAR = 2026;
 
@@ -55,7 +55,7 @@
         'The game saves automatically every 10 s – use Export in the settings menu for a backup.',
         'Pause stops everything, including the play time in the statistics.',
         'Milestones (e.g. your first D reset) give permanent bonuses that survive every reset.',
-        'Up to 8 h of absence are counted when you come back (not while paused).'
+        'Up to 8 h of absence are counted at half speed when you come back (not while paused).'
       ] }
     ],
     de: [
@@ -76,7 +76,7 @@
         'Der Spielstand speichert alle 10 s automatisch – mit Export im Zahnrad-Menü sicherst du ihn.',
         'Pause hält alles an, auch die Spielzeit in der Statistik.',
         'Meilensteine (z. B. dein erster D-Reset) geben dauerhafte Boni, die jeden Reset überstehen.',
-        'Bis zu 8 h Abwesenheit werden beim Zurückkommen angerechnet (nicht während der Pause).'
+        'Bis zu 8 h Abwesenheit werden beim Zurückkommen mit halber Geschwindigkeit angerechnet (nicht während der Pause).'
       ] }
     ]
   };

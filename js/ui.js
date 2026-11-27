@@ -524,10 +524,11 @@
   // Verpasste Zeit nachrechnen; ab minShow Sekunden das Fenster „Willkommen zurück“ zeigen
   function applyAway(seconds, minShow) {
     if (!(seconds > 0) || game.state.paused) return;
-    const counted = Math.min(seconds, AP.OFFLINE_MAX);
+    // max. 8 h Abwesenheit, angerechnet mit OFFLINE_RATE (50 %) als Spielzeit
+    const counted = Math.min(seconds, AP.OFFLINE_MAX) * AP.OFFLINE_RATE;
     const gain = game.catchUp(counted);
     if (!gain || seconds < minShow) return;
-    $('welcomeText').textContent = t('awayFor', { t: fmtTime(seconds) });
+    $('welcomeText').textContent = t('awayFor', { t: fmtTime(seconds), g: fmtTime(counted) });
     const items = [];
     if (gain.points.gt(0)) items.push('+' + fmt(gain.points) + ' ' + t('pointsLower'));
     game.LAYER_KEYS.forEach(L => { if (gain[L].gte(0.5)) items.push('+' + fmtAmt(gain[L]) + ' ' + L); });
@@ -548,8 +549,8 @@
     let dt = (now - last) / 1000;
     last = now;
     saveTimer += dt;
-    // lange Lücke (Hintergrund-Tab, gesperrtes Handy): wie Offline-Fortschritt nachrechnen, Fenster ab 5 min
-    if (dt > 60) applyAway(dt, 300);
+    // lange Lücke (> 5 min, z. B. gesperrtes Handy): wie Offline-Fortschritt nachrechnen (50 % Tempo) mit Fenster
+    if (dt > 300) applyAway(dt, 300); // Hintergrund-Tab (Browser drosselt auf ~1 Schritt/min) läuft bis 5 min voll weiter
     else while (dt > 0) { const step = Math.min(dt, 0.5); game.tick(step); dt -= step; }
     if (saveTimer >= 10) { saveTimer = 0; showSaved(game.save()); }
     render();
