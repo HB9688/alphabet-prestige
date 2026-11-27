@@ -56,6 +56,7 @@ Browser-Idle-/Prestige-Spiel. Jeder Buchstabe A–Z ist eine Prestigestufe mit j
 
 - AA ist kostenlos und erzeugt 1 Punkt/s. A-Reset ab 10 Punkten: Gewinn `floor((Quelle/req)^exp × Multiplikatoren)`.
 - Ein Reset der Stufe X setzt Punkte und alle niedrigeren Stufen (Punkte und Upgrades) zurück; `keep:`-Upgrades behalten die ersten N Upgrades.
+- **Offline-Fortschritt:** Beim Öffnen und nach langen Lücken (Hintergrund-Tab, > 60 s) rechnet `game.catchUp()` die verpasste Zeit nach – höchstens 8 h (`AP.OFFLINE_MAX`), nicht während der Pause, ohne Resets (nur Erzeugung, passive Gewinne, Auto-Kauf). `lastSeen` wird bei jedem `save()` gesetzt; gespeichert wird alle 10 s sowie bei `visibilitychange`/`pagehide`/`beforeunload`. Danach erscheint das Fenster „Welcome back“ mit den Zuwächsen.
 - Verlauf der Automatisierung: zuerst Auto-Kauf (BG, CI), dann passive Erzeugung ohne Reset – erst 1 %/s (CD für A, CL für B), dann 10 %/s (CF, CO), dann ×10 (CJ, CT). Auto-Reset (`autoreset:X`) ist im Code noch vorhanden, wird aber von keinem Upgrade mehr genutzt. Spätere Stufen sollen das weiter ausbauen.
 
 ## Balance
@@ -66,7 +67,7 @@ Zielzeiten für einen aktiven Spieler (vom Nutzer vorgegeben: ~1 h bis zur erste
 |---|---|---|
 | erster A-Reset | ~10 s | 0:10 |
 | AZ / erster B-Reset | ~55–60 min | 54 / 56 min |
-| BZ | ~4 h (vom Nutzer so akzeptiert) | 4:02 h |
+| BZ | ~4 h (vom Nutzer so akzeptiert, B bewusst nicht gestrafft) | 4:02 h |
 | CZ | ~6 h | 5:44 h |
 
 Spätere Stufen ähnlich: ca. 60–90 min pro Stufe.

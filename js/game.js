@@ -24,6 +24,7 @@
       tab: 'A',
       lang: 'en', // Primärsprache Englisch; Deutsch umschaltbar
       paused: false, // Pause: keine Zeit, keine Erzeugung, keine Käufe/Resets
+      lastSeen: null, // Zeitstempel (ms) des letzten Speicherns – für Offline-Fortschritt
       // höchster Upgrade-Index je Stufe, der schon einmal aufgedeckt war (bleibt nach Resets sichtbar)
       revealed: { A: 2, B: 2, C: 2 },
       auto: { buyA: true, resetA: true, resetAFactor: 1, buyB: true, resetB: true, resetBFactor: 1 },
@@ -251,7 +252,21 @@
         }
       },
 
+      // Offline-Fortschritt: verpasste Zeit in höchstens ~5000 Schritten nachrechnen (passive Erzeugung,
+      // Auto-Kauf; keine Resets). Liefert den Zuwachs für die Willkommen-zurück-Anzeige.
+      catchUp(seconds) {
+        if (s.paused || !(seconds > 0)) return null;
+        const before = { points: s.points };
+        LAYER_KEYS.forEach(L => { before[L] = s.layers[L].amt; });
+        const steps = Math.min(5000, Math.ceil(seconds / 0.5)), step = seconds / steps;
+        for (let i = 0; i < steps; i++) game.tick(step);
+        const gain = { points: s.points - before.points };
+        LAYER_KEYS.forEach(L => { gain[L] = s.layers[L].amt - before[L]; });
+        return gain;
+      },
+
       save() {
+        s.lastSeen = Date.now();
         try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); return true; } catch (e) { return false; }
       },
       exportSave() { return btoa(unescape(encodeURIComponent(JSON.stringify(s)))); }
@@ -261,6 +276,7 @@
 
   AP.createGame = createGame;
   AP.LAYERS = LAYERS;
+  AP.OFFLINE_MAX = 8 * 3600; // höchstens 8 h Abwesenheit werden angerechnet
   AP.loadSaved = function () {
     try { const raw = localStorage.getItem(SAVE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
   };

@@ -395,7 +395,9 @@
   document.addEventListener('keydown', e => {
     if (!isSpace(e) || inField(e) || e.ctrlKey || e.altKey || e.metaKey) return;
     e.preventDefault();
-    if (!e.repeat) togglePause();
+    if (e.repeat) return;
+    if (!$('welcomeOverlay').hidden) { closeWelcome(); return; } // Leertaste schließt erst das Willkommensfenster
+    togglePause();
   }, true);
   document.addEventListener('keyup', e => { if (isSpace(e) && !inField(e)) e.preventDefault(); }, true);
 
@@ -470,16 +472,44 @@
     location.reload();
   });
   window.addEventListener('beforeunload', () => { if (!skipSave) game.save(); });
+  // Handy: beim Wegwechseln speichern (beforeunload kommt dort oft nicht) – hält auch lastSeen aktuell
+  document.addEventListener('visibilitychange', () => { if (document.hidden && !skipSave) game.save(); });
+  window.addEventListener('pagehide', () => { if (!skipSave) game.save(); });
+
+  // ---------- Offline-Fortschritt ----------
+  function closeWelcome() { $('welcomeOverlay').hidden = true; }
+  $('welcomeOk').addEventListener('click', closeWelcome);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWelcome(); });
+  // Verpasste Zeit nachrechnen; ab minShow Sekunden das Fenster „Willkommen zurück“ zeigen
+  function applyAway(seconds, minShow) {
+    if (!(seconds > 0) || game.state.paused) return;
+    const counted = Math.min(seconds, AP.OFFLINE_MAX);
+    const gain = game.catchUp(counted);
+    if (!gain || seconds < minShow) return;
+    $('welcomeText').textContent = t('awayFor', { t: fmtTime(seconds) });
+    const items = [];
+    if (gain.points > 0) items.push('+' + fmt(gain.points) + ' ' + t('pointsLower'));
+    game.LAYER_KEYS.forEach(L => { if (gain[L] >= 0.5) items.push('+' + fmtAmt(gain[L]) + ' ' + L); });
+    $('welcomeGains').innerHTML = '';
+    (items.length ? items : [t('offlineNone')]).forEach(x => { const li = document.createElement('li'); li.textContent = x; $('welcomeGains').appendChild(li); });
+    $('welcomeCap').hidden = seconds <= AP.OFFLINE_MAX;
+    $('welcomeCap').textContent = t('offlineCap');
+    closePanels();
+    $('welcomeOverlay').hidden = false;
+    render();
+  }
 
   // ---------- Schleife ----------
   let last = performance.now();
   let saveTimer = 0;
   setInterval(() => {
     const now = performance.now();
-    let dt = Math.min((now - last) / 1000, 3600);
+    let dt = (now - last) / 1000;
     last = now;
     saveTimer += dt;
-    while (dt > 0) { const step = Math.min(dt, 0.5); game.tick(step); dt -= step; }
+    // lange Lücke (Hintergrund-Tab, gesperrtes Handy): wie Offline-Fortschritt nachrechnen, Fenster ab 5 min
+    if (dt > 60) applyAway(dt, 300);
+    else while (dt > 0) { const step = Math.min(dt, 0.5); game.tick(step); dt -= step; }
     if (saveTimer >= 10) { saveTimer = 0; showSaved(game.save()); }
     render();
     renderStats();
@@ -498,4 +528,6 @@
 
   applyLang();
   switchTab(game.state.unlocked.includes(game.state.tab) ? game.state.tab : 'A');
+  // Beim Öffnen: Zeit seit dem letzten Speichern anrechnen (Fenster ab 1 min Abwesenheit)
+  if (game.state.lastSeen) applyAway((Date.now() - game.state.lastSeen) / 1000, 60);
 })(globalThis.AP = globalThis.AP || {});

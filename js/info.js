@@ -3,12 +3,15 @@
 // Versionsschema 0.MINOR.PATCH: MINOR = größere Änderung mit Eintrag in AP.CHANGELOG,
 // PATCH = kleine Änderung/Fix ohne Eintrag. Bei jedem Merge auf main AP.VERSION erhöhen.
 (function (AP) {
-  AP.VERSION = '0.5.2';
+  AP.VERSION = '0.6.0';
   AP.AUTHOR = 'HB9688';
   AP.COPYRIGHT_YEAR = 2026;
 
   // Neueste zuerst; nur größere Versionen, kurz gehalten.
   AP.CHANGELOG = [
+    { v: '0.6.0', date: '2026-11-27',
+      en: 'Offline progress (up to 8 h) with a welcome-back summary',
+      de: 'Offline-Fortschritt (bis 8 h) mit Willkommen-zurück-Übersicht' },
     { v: '0.5.0', date: '2026-11-27',
       en: 'Info and help windows with version history and shortcuts; English is now the default language',
       de: 'Info- und Hilfe-Fenster mit Versionsgeschichte und Tastenkürzeln; Englisch ist jetzt Standardsprache' },
@@ -44,7 +47,8 @@
         'Upgrades saying “… effect ×” strengthen an earlier upgrade.',
         'Auto buy can be switched off in the header of the upgrade list.',
         'The game saves automatically every 10 s – use Export in the settings menu for a backup.',
-        'Pause stops everything, including the play time in the statistics.'
+        'Pause stops everything, including the play time in the statistics.',
+        'Up to 8 h of absence are counted when you come back (not while paused).'
       ] }
     ],
     de: [
@@ -63,7 +67,8 @@
         'Upgrades mit „Effekt von …“ verstärken ein früheres Upgrade.',
         'Auto-Kauf lässt sich im Kopf der Upgrade-Liste abschalten.',
         'Der Spielstand speichert alle 10 s automatisch – mit Export im Zahnrad-Menü sicherst du ihn.',
-        'Pause hält alles an, auch die Spielzeit in der Statistik.'
+        'Pause hält alles an, auch die Spielzeit in der Statistik.',
+        'Bis zu 8 h Abwesenheit werden beim Zurückkommen angerechnet (nicht während der Pause).'
       ] }
     ]
   };
