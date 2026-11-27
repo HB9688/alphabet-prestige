@@ -173,7 +173,8 @@ h1 {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  /* Desktop: Upgrades links, Punkte/Reset rechts – kurzer Mausweg zwischen Reset- und Kaufen-Knopf */
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 320px);
   gap: 14px;
   padding: 14px;
   background: var(--surface);
@@ -188,6 +189,9 @@ h1 {
   overflow-y: auto;
   min-height: 0;
 }
+
+#panel { order: 2; }
+.upcard { order: 1; }
 
 .card {
   background: var(--surface-2);
@@ -295,6 +299,7 @@ h1 {
 @media (max-width: 760px) {
   body { overflow: auto; height: auto; }
   #stage { grid-template-columns: 1fr; }
+  #panel, .upcard { order: 0; }
   .topbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 6px; text-align: left; }
   .settings { position: static; }
   .menu { display: block; flex: 0 0 100%; margin: 8px 0 0; }
